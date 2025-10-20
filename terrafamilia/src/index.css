@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Global background image */
+body {
+  background-image: url("./assets/tf-bg-1.webp");
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-height: 100vh;
+}
