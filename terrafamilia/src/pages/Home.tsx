@@ -11,22 +11,21 @@ function Home() {
         <Cover />
       </section>
       <section className="flex-grow">
-        <h2 className="text-slate-800 text-center text-3xl font-bold py-8">
+        <h2 className="text-slate-800 text-center text-xl md:text-3xl font-bold py-8">
           Terrafamilia!
         </h2>
         <div className="flex flex-col gap-10 px-10 mt-10 pb-10 md:flex-row">
           <div className="space-y-4 bg-white/90 p-6 rounded-lg border border-slate-200">
-            <h3 className="text-2xl text-center text-slate-800">Welcome</h3>
-            <p className="text-slate-700">
+            <h3 className="text-lg md:text-2xl text-center text-slate-800">
+              Welcome
+            </h3>
+            <p className="text-sm md:text-base text-slate-700">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
               rutrum dolor vitae vulputate commodo. Etiam a mi purus. Phasellus
               fringilla dignissim fermentum. Aenean ut sapien dignissim,
               imperdiet elit vel, iaculis orci. Nam vehicula, leo id iaculis
               egestas, ipsum metus facilisis ipsum, a faucibus elit diam ac
-              ligula. Proin pretium scelerisque tortor, tincidunt tempor eros.
-              Morbi tempus placerat eleifend. In vulputate lacinia eros ac
-              dignissim. Nam tempor efficitur elit sit amet porta. Curabitur id
-              libero luctus, faucibus mauris id, vulputate ipsum.
+              ligula.
             </p>
             <div className="text-center">
               <Link
@@ -38,19 +37,16 @@ function Home() {
             </div>
           </div>
           <div className="space-y-4 bg-emerald-50/90 p-6 rounded-lg border border-emerald-200">
-            <h3 className="text-2xl text-center text-emerald-800">
+            <h3 className="text-lg md:text-2xl text-center text-emerald-800">
               The Commons
             </h3>
-            <p className="text-emerald-700">
+            <p className="text-sm md:text-base text-emerald-700">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
               rutrum dolor vitae vulputate commodo. Etiam a mi purus. Phasellus
               fringilla dignissim fermentum. Aenean ut sapien dignissim,
               imperdiet elit vel, iaculis orci. Nam vehicula, leo id iaculis
               egestas, ipsum metus facilisis ipsum, a faucibus elit diam ac
-              ligula. Proin pretium scelerisque tortor, tincidunt tempor eros.
-              Morbi tempus placerat eleifend. In vulputate lacinia eros ac
-              dignissim. Nam tempor efficitur elit sit amet porta. Curabitur id
-              libero luctus, faucibus mauris id, vulputate ipsum.
+              ligula.
             </p>
             <div className="text-center">
               <Link
@@ -62,17 +58,16 @@ function Home() {
             </div>
           </div>
           <div className="space-y-4 bg-blue-50/90 p-6 rounded-lg border border-blue-200">
-            <h3 className="text-2xl text-center text-blue-800">About</h3>
-            <p className="text-blue-700">
+            <h3 className="text-lg md:text-2xl text-center text-blue-800">
+              About
+            </h3>
+            <p className="text-sm md:text-base text-blue-700">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
               rutrum dolor vitae vulputate commodo. Etiam a mi purus. Phasellus
               fringilla dignissim fermentum. Aenean ut sapien dignissim,
               imperdiet elit vel, iaculis orci. Nam vehicula, leo id iaculis
               egestas, ipsum metus facilisis ipsum, a faucibus elit diam ac
-              ligula. Proin pretium scelerisque tortor, tincidunt tempor eros.
-              Morbi tempus placerat eleifend. In vulputate lacinia eros ac
-              dignissim. Nam tempor efficitur elit sit amet porta. Curabitur id
-              libero luctus, faucibus mauris id, vulputate ipsum.
+              ligula.
             </p>
             <div className="text-center">
               <Link

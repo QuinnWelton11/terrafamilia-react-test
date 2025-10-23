@@ -20,9 +20,6 @@ function Navigation() {
     if (isAuthenticated && user) {
       return (
         <>
-          <span className="text-emerald-200 text-sm">
-            Welcome, {user.username}!
-          </span>
           <button
             onClick={handleLogout}
             className="transition-all duration-300 hover:text-emerald-200 hover:scale-105 hover:underline underline-offset-4 decoration-2"
@@ -47,9 +44,6 @@ function Navigation() {
     if (isAuthenticated && user) {
       return (
         <>
-          <span className="text-emerald-200 text-sm py-2">
-            Welcome, {user.username}!
-          </span>
           <button
             onClick={handleLogout}
             className="block py-2 transition-all duration-300 hover:text-emerald-200 hover:pl-2 text-left"

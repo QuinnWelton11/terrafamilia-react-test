@@ -9,3 +9,8 @@ body {
   background-size: cover;
   min-height: 100vh;
 }
+
+em {
+  font-weight: 500;
+  color: #006045;
+}
