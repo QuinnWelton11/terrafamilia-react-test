@@ -3,10 +3,10 @@
 // Update these values with your actual database credentials from cPanel
 
 class Database {
-    private $host = 'localhost'; // Usually localhost on shared hosting
-    private $db_name = 'your_cpanel_username_terrafamilia'; // Your actual database name
-    private $username = 'your_cpanel_username'; // Your cPanel username
-    private $password = 'your_database_password'; // Your database password
+    private $host = 'localhost:3306'; // MAMP MySQL server
+    private $db_name = 'terrafamilia-react'; // Your MAMP database name
+    private $username = 'root'; // MAMP default username
+    private $password = 'root'; // MAMP default password
     private $conn;
     
     public function getConnection() {
@@ -33,6 +33,7 @@ function setCorsHeaders() {
     $allowed_origins = [
         'http://localhost:5173', // Vite development server
         'http://localhost:3000', // Alternative dev server
+        'http://localhost:8888', // MAMP Apache server
         'https://yourdomain.com' // Your actual domain
     ];
     
@@ -64,4 +65,6 @@ ini_set('session.use_strict_mode', 1);
 // Error reporting (disable in production)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', 'php_errors.log');
 ?>

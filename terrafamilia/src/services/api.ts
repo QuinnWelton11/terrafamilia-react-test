@@ -1,6 +1,6 @@
 // API service for backend communication
 
-const API_BASE_URL = "https://yourdomain.com/api"; // Update with your actual domain
+const API_BASE_URL = "http://localhost/terrafamilia-react/api"; // Update with correct port
 // For development, you might use: 'http://localhost/api' or your cPanel domain
 
 interface User {

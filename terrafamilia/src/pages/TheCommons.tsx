@@ -2,8 +2,37 @@ import Nav from "../components/Navigation";
 import { Link } from "react-router-dom";
 import Cover from "../components/CoverImg";
 import Footer from "../components/Footer";
+import { useState, useEffect } from "react";
+import ApiService from "../services/api";
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+}
 
 function TheCommons() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await ApiService.getCategories();
+        if (response.success) {
+          setCategories(response.categories || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   const forumCategories = [
     {
       name: "Trading & Barter",
@@ -101,17 +130,16 @@ function TheCommons() {
                   <div
                     key={sub.slug}
                     className="block p-3 bg-slate-50 hover:bg-slate-100 rounded-md transition-colors duration-200 cursor-pointer"
-                    onClick={() =>
-                      alert(
-                        `${sub.name} forum coming soon! Complete the backend setup first.`
-                      )
-                    }
+                    onClick={() => {
+                      // TODO: Navigate to individual forum category
+                      console.log(`Navigate to ${sub.name} forum`);
+                    }}
                   >
                     <span className="text-emerald-600 hover:text-emerald-700 font-medium">
                       {sub.name}
                     </span>
                     <span className="text-xs text-slate-500 ml-2">
-                      (Coming Soon)
+                      (Click to view posts)
                     </span>
                   </div>
                 ))}
@@ -119,11 +147,10 @@ function TheCommons() {
 
               {/* View All Link */}
               <button
-                onClick={() =>
-                  alert(
-                    `${category.name} forum coming soon! Complete the backend setup first.`
-                  )
-                }
+                onClick={() => {
+                  // TODO: Navigate to main category view
+                  console.log(`Navigate to ${category.name} main category`);
+                }}
                 className="inline-block mt-4 text-emerald-600 hover:text-emerald-700 font-medium cursor-pointer"
               >
                 View all in {category.name} →
