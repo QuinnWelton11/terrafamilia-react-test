@@ -68,8 +68,10 @@ function Navigation() {
   return (
     <header className="bg-slate-800 text-slate-100 px-4 md:px-10 py-5">
       <div className="flex justify-between items-center">
-        <img src={LogoImg} alt="" className="max-w-[3rem]" />
-
+        <div className="flex flex-row items-center space-x-2 text-base md:text-xl">
+          <img src={LogoImg} alt="" className="max-w-[3rem]" />
+          <h1>Terrafamilia</h1>
+        </div>
         {/* Desktop Navigation */}
         <div className="hidden md:flex space-x-5 text-lg items-center">
           <Link

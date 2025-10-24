@@ -1,6 +1,6 @@
 // API service for backend communication
 
-const API_BASE_URL = "http://localhost/terrafamilia-react/api"; // Update with correct port
+const API_BASE_URL = "http://localhost/terrafamilia-backend/api"; // Updated to correct MAMP path
 // For development, you might use: 'http://localhost/api' or your cPanel domain
 
 interface User {

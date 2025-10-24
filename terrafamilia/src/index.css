@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Georama:wght@400;500;600;700;800&family=Istok+Web:wght@400;700&display=swap");
 
 /* Global background image */
 body {
@@ -8,6 +9,17 @@ body {
   background-repeat: no-repeat;
   background-size: cover;
   min-height: 100vh;
+  font-family: "Istok Web", system-ui, sans-serif;
+}
+
+/* Heading elements use Georama */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Georama", system-ui, sans-serif;
 }
 
 em {

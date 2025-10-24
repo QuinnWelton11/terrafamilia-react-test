@@ -60,6 +60,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   ): Promise<boolean> => {
     try {
       const response = await ApiService.login(username, password);
+
       if (response.success && response.user) {
         setUser(response.user);
         return true;
@@ -70,7 +71,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return false;
     }
   };
-
   const logout = async (): Promise<void> => {
     try {
       await ApiService.logout();

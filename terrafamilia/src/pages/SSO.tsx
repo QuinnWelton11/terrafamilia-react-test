@@ -4,6 +4,7 @@ import Nav from "../components/Navigation";
 import ApiService from "../services/api";
 import Cover from "../components/CoverImg";
 import Footer from "../components/Footer";
+import { useAuth } from "../contexts/AuthContext";
 
 interface FormData {
   username: string;
@@ -18,6 +19,7 @@ interface FormData {
 
 function SSO() {
   const [isLogin, setIsLogin] = useState(true);
+  const { login: authLogin, isAuthenticated } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     username: "",
     email: "",
@@ -37,20 +39,10 @@ function SSO() {
 
   // Check if user is already authenticated
   useEffect(() => {
-    const checkAuth = async () => {
-      if (ApiService.isAuthenticated()) {
-        try {
-          const response = await ApiService.getCurrentUser();
-          if (response.authenticated) {
-            navigate("/the-commons");
-          }
-        } catch (error) {
-          // Token might be invalid, let user proceed with login
-        }
-      }
-    };
-    checkAuth();
-  }, [navigate]);
+    if (isAuthenticated) {
+      navigate("/the-commons");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -128,19 +120,19 @@ function SSO() {
 
     try {
       if (isLogin) {
-        const response = await ApiService.login(
-          formData.username,
-          formData.password
-        );
+        const success = await authLogin(formData.username, formData.password);
 
-        if (response.success) {
+        if (success) {
           setMessage({
             type: "success",
             text: "Login successful! Redirecting...",
           });
           setTimeout(() => navigate("/the-commons"), 1500);
         } else {
-          setMessage({ type: "error", text: response.message });
+          setMessage({
+            type: "error",
+            text: "Invalid username or password",
+          });
         }
       } else {
         const registrationData = {
@@ -205,7 +197,7 @@ function SSO() {
           {/* Header */}
           <div className="bg-slate-800 text-slate-100 p-6 text-center">
             <h1 className="text-2xl font-bold">
-              {isLogin ? "Welcome Back" : "Join TerraMamilia"}
+              {isLogin ? "Welcome Back" : "Join Terrafamilia"}
             </h1>
             <p className="text-slate-300 mt-2">
               {isLogin

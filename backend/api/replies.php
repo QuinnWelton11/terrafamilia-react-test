@@ -113,10 +113,17 @@ function createReply($conn) {
                  VALUES (:post_id, :user_id, :content, :parent_reply_id)";
         
         $stmt = $conn->prepare($query);
-        $stmt->bindParam(':post_id', $input['post_id']);
-        $stmt->bindParam(':user_id', $user['id']);
-        $stmt->bindParam(':content', $input['content']);
-        $stmt->bindParam(':parent_reply_id', $input['parent_reply_id'] ?? null);
+        
+        // Fix PHP 8 compatibility - use variables for bindParam
+        $post_id = $input['post_id'];
+        $user_id = $user['id'];
+        $content = $input['content'];
+        $parent_reply_id = $input['parent_reply_id'] ?? null;
+        
+        $stmt->bindParam(':post_id', $post_id);
+        $stmt->bindParam(':user_id', $user_id);
+        $stmt->bindParam(':content', $content);
+        $stmt->bindParam(':parent_reply_id', $parent_reply_id);
         
         if ($stmt->execute()) {
             $reply_id = $conn->lastInsertId();
@@ -129,8 +136,8 @@ function createReply($conn) {
                             WHERE id = :post_id";
             
             $update_stmt = $conn->prepare($update_query);
-            $update_stmt->bindParam(':user_id', $user['id']);
-            $update_stmt->bindParam(':post_id', $input['post_id']);
+            $update_stmt->bindParam(':user_id', $user_id);
+            $update_stmt->bindParam(':post_id', $post_id);
             $update_stmt->execute();
             
             http_response_code(201);

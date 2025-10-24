@@ -9,13 +9,13 @@ function AboutUs() {
       <Cover />
 
       {/* Main content area - you can add AboutUs content here */}
-      <main className="flex-grow container mx-auto px-6 py-8 max-w-4xl">
+      <main className="flex-grow container mx-auto px-6 py-8 my-6 max-w-4xl">
         <div className="space-y-10">
           <section id="about-intro">
-            <h1 className="text-2xl md:text-4xl font-bold text-slate-900 mb-4">
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-4">
               About Terrafamilia
             </h1>
-            <p className="text-base md:text-lg text-slate-800 mx-auto">
+            <p className="text-base md:text-lg mx-auto">
               Welcome to TerraFamilia — a shared space for unity, exchange, and
               growth. Here, we believe in the power of people coming together —
               not just to trade goods, but to share knowledge, ideas, and
@@ -25,10 +25,10 @@ function AboutUs() {
           </section>
 
           <section id="about-goal">
-            <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4">
+            <h2 className="text-xl md:text-2xl font-bold text-slate-700 mb-4">
               Our Goal
             </h2>
-            <p>
+            <p className="text-base md:text-lg mx-auto">
               To create an open and inclusive digital commons where individuals
               can connect, trade, barter, and learn from one another in a spirit
               of mutual respect and cooperation. TerraFamilia is more than a
@@ -38,10 +38,10 @@ function AboutUs() {
           </section>
 
           <section id="about-values">
-            <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4">
+            <h2 className="text-xl md:text-2xl font-bold text-slate-700 mb-4">
               Our Values
             </h2>
-            <ul>
+            <ul className="space-y-4 text-base md:text-lg mx-auto">
               <li>
                 <em>Honesty and Respect:</em> Every interaction should be rooted
                 in truth and empathy.
@@ -66,10 +66,10 @@ function AboutUs() {
           </section>
 
           <section id="about-promise">
-            <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-4">
+            <h2 className="text-xl md:text-2xl font-bold text-slate-700 mb-4">
               Our Promise
             </h2>
-            <p>
+            <p className="text-base md:text-lg mx-auto">
               TerraFamilia is designed to be a safe haven for open dialogue and
               collaboration, free from invasive tracking and corporate
               interference. We believe in technology that serves people, not the

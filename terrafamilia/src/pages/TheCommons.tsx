@@ -134,7 +134,7 @@ function TheCommons() {
     <div className="min-h-screen flex flex-col">
       <Nav />
       <Cover />
-      <div className="container mx-auto px-6 py-8 flex-grow">
+      <div className="container mx-auto px-6 py-8 flex-grow max-w-7xl">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl md:text-4xl font-bold text-slate-800 mb-4">

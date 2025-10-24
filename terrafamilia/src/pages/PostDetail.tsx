@@ -133,9 +133,15 @@ function PostDetail() {
         }
         setReplyContent("");
         setReplyingTo(null);
+      } else {
+        console.error("Reply failed:", response.message);
+        alert(
+          "Failed to create reply: " + (response.message || "Unknown error")
+        );
       }
     } catch (error) {
       console.error("Failed to create reply:", error);
+      alert("Failed to create reply. Please try again.");
     } finally {
       setSubmitting(false);
     }
