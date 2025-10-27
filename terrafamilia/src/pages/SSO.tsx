@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Nav from "../components/Navigation";
+import { useNavigate, Link } from "react-router-dom";
 import Cover from "../components/CoverImg";
-import Footer from "../components/Footer";
 import { useAuth } from "../contexts/AuthContext";
 
 interface FormData {
@@ -29,6 +27,7 @@ function SSO() {
     state_province: "",
     phone_number: "",
   });
+  const [acceptedEula, setAcceptedEula] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -63,6 +62,14 @@ function SSO() {
         setMessage({
           type: "error",
           text: "Please fill in all required fields",
+        });
+        return false;
+      }
+
+      if (!acceptedEula) {
+        setMessage({
+          type: "error",
+          text: "You must accept the End User License Agreement to continue",
         });
         return false;
       }
@@ -172,6 +179,7 @@ function SSO() {
   const toggleMode = () => {
     setIsLogin(!isLogin);
     setMessage(null);
+    setAcceptedEula(false);
     setFormData({
       username: "",
       email: "",
@@ -186,7 +194,6 @@ function SSO() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Nav />
       <Cover />
 
       <div className="container mx-auto px-6 py-12 flex-grow">
@@ -392,6 +399,32 @@ function SSO() {
               </div>
             )}
 
+            {/* EULA Checkbox (Registration only) */}
+            {!isLogin && (
+              <div className="flex items-start space-x-2">
+                <input
+                  type="checkbox"
+                  id="eula"
+                  checked={acceptedEula}
+                  onChange={(e) => setAcceptedEula(e.target.checked)}
+                  className="mt-1 w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500"
+                  required
+                />
+                <label htmlFor="eula" className="text-sm text-slate-700">
+                  I accept the{" "}
+                  <Link
+                    to="/eula"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-600 hover:text-emerald-700 underline font-medium"
+                  >
+                    End User License Agreement
+                  </Link>{" "}
+                  <span className="text-red-500">*</span>
+                </label>
+              </div>
+            )}
+
             {/* Submit Button */}
             <button
               type="submit"
@@ -445,7 +478,6 @@ function SSO() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

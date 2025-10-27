@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import Nav from "../components/Navigation";
-import Footer from "../components/Footer";
 import SupabaseService, { type Post, type Reply } from "../services/supabase";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -171,14 +169,12 @@ function PostDetail() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Nav />
         <main className="grow container mx-auto px-6 py-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
             <p className="mt-4 text-slate-600">Loading post...</p>
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
@@ -186,7 +182,6 @@ function PostDetail() {
   if (!post) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Nav />
         <main className="grow container mx-auto px-6 py-8">
           <div className="text-center">
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-4">
@@ -203,7 +198,6 @@ function PostDetail() {
             </Link>
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
@@ -215,8 +209,6 @@ function PostDetail() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Nav />
-
       <main className="grow container mx-auto px-6 py-8">
         {/* Breadcrumb */}
         <nav className="mb-6">
@@ -381,8 +373,6 @@ function PostDetail() {
           )}
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

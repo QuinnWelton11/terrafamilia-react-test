@@ -1,7 +1,5 @@
-import Nav from "../components/Navigation";
 import { Link, useNavigate } from "react-router-dom";
 import Cover from "../components/CoverImg";
-import Footer from "../components/Footer";
 import { useState, useEffect } from "react";
 import SupabaseService from "../services/supabase";
 
@@ -103,7 +101,6 @@ function TheCommons() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Nav />
       <Cover />
       <div className="container mx-auto px-6 py-8 grow max-w-7xl">
         {/* Header */}
@@ -293,7 +290,6 @@ function TheCommons() {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

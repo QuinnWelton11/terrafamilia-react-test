@@ -13,6 +13,8 @@ export interface Profile {
   id: string;
   username: string;
   full_name: string;
+  email?: string;
+  avatar_url?: string;
   country?: string;
   state_province?: string;
   phone_number?: string;
@@ -140,7 +142,141 @@ class SupabaseService {
       .single();
 
     if (error) throw error;
+
+    // Get email from auth.users
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user && user.id === userId) {
+      return { ...data, email: user.email };
+    }
+
     return data;
+  }
+
+  async updateProfile(
+    userId: string,
+    updates: {
+      username?: string;
+      full_name?: string;
+      country?: string;
+      state_province?: string;
+      phone_number?: string;
+      avatar_url?: string;
+    }
+  ) {
+    const { data, error } = await supabase
+      .from("profiles")
+      .update(updates)
+      .eq("id", userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async uploadAvatar(file: File) {
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error("Must be authenticated");
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error("File exceeds 5MB limit");
+    }
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      throw new Error("File is not an image");
+    }
+
+    // Generate unique filename: userId/avatar-timestamp.ext
+    const timestamp = Date.now();
+    const ext = file.name.split(".").pop();
+    const fileName = `${user.id}/avatar-${timestamp}.${ext}`;
+
+    // Upload to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from("avatars")
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: true,
+      });
+
+    if (error) throw error;
+
+    // Get public URL
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("avatars").getPublicUrl(data.path);
+
+    // Update profile with new avatar URL
+    await this.updateProfile(user.id, { avatar_url: publicUrl });
+
+    return publicUrl;
+  }
+
+  async deleteAvatar() {
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error("Must be authenticated");
+
+    const profile = await this.getProfile(user.id);
+    if (profile.avatar_url) {
+      // Extract file path from URL
+      const urlParts = profile.avatar_url.split("/avatars/");
+      if (urlParts.length >= 2) {
+        const filePath = urlParts[1];
+        await supabase.storage.from("avatars").remove([filePath]);
+      }
+    }
+
+    // Update profile to remove avatar URL
+    await this.updateProfile(user.id, { avatar_url: undefined });
+  }
+
+  async updateEmail(newEmail: string) {
+    const { data, error } = await supabase.auth.updateUser({
+      email: newEmail,
+    });
+
+    if (error) throw error;
+    return data;
+  }
+
+  async updatePassword(newPassword: string) {
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) throw error;
+    return data;
+  }
+
+  async getUserPosts(userId: string, page: number = 1, limit: number = 10) {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    const { data, error, count } = await supabase
+      .from("posts")
+      .select(
+        `
+        *,
+        categories:category_id (id, name, slug)
+      `,
+        { count: "exact" }
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (error) throw error;
+
+    return {
+      posts: data,
+      total: count || 0,
+      page,
+      totalPages: Math.ceil((count || 0) / limit),
+    };
   }
 
   onAuthStateChange(callback: (user: any) => void) {

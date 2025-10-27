@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import Nav from "../components/Navigation";
-import Footer from "../components/Footer";
 import SupabaseService, { type Post } from "../services/supabase";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -94,22 +92,18 @@ function ForumCategory() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Nav />
         <main className="grow container mx-auto px-6 py-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
             <p className="mt-4 text-slate-600">Loading posts...</p>
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Nav />
-
       <main className="grow container mx-auto px-6 py-8">
         {/* Breadcrumb */}
         <nav className="mb-6">
@@ -303,8 +297,6 @@ function ForumCategory() {
           </div>
         )}
       </main>
-
-      <Footer />
     </div>
   );
 }
