@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @import url("https://fonts.googleapis.com/css2?family=Georama:wght@400;500;600;700;800&family=Istok+Web:wght@400;700&display=swap");
 
+/* Prevent horizontal overflow */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 /* Global background image */
 body {
   background-image: url("./assets/tf-bg-1.webp");

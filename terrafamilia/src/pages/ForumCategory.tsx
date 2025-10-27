@@ -42,15 +42,32 @@ function ForumCategory() {
       setCategoryName(categoryDisplayNames[categorySlug] || categorySlug);
 
       try {
-        // First get the category ID from slug
-        const category = await SupabaseService.getCategoryBySlug(categorySlug);
-        
-        // Then fetch posts for this category
-        const result = await SupabaseService.getPosts({
-          category_id: category.id,
-          page: currentPage,
-          limit: postsPerPage,
-        });
+        // First get the category with its children
+        const category = await SupabaseService.getCategoryWithChildren(
+          categorySlug
+        );
+
+        // Check if this category has subcategories (is a parent)
+        const subcategories = (category as any).subcategories || [];
+        const hasChildren = subcategories.length > 0;
+
+        let result;
+        if (hasChildren) {
+          // If it's a parent category, fetch posts from all child categories
+          const childIds = subcategories.map((sub: any) => sub.id);
+          result = await SupabaseService.getPosts({
+            category_ids: childIds,
+            page: currentPage,
+            limit: postsPerPage,
+          });
+        } else {
+          // If it's a leaf category, just fetch posts from this category
+          result = await SupabaseService.getPosts({
+            category_id: category.id,
+            page: currentPage,
+            limit: postsPerPage,
+          });
+        }
 
         setPosts(result.posts || []);
         setTotalPosts(result.total);
@@ -180,15 +197,29 @@ function ForumCategory() {
         ) : (
           <div className="space-y-4">
             {posts.map((post) => {
-              const author = (post.profiles as any)?.username || 'Anonymous';
-              
+              const author = (post.profiles as any)?.username || "Anonymous";
+
               return (
                 <div
                   key={post.id}
                   className="bg-white rounded-lg shadow-md border border-slate-200 p-6 hover:shadow-lg transition-shadow duration-300"
                 >
-                  <div className="flex justify-between items-start">
-                    <div className="grow">
+                  <div className="flex gap-4">
+                    {/* Thumbnail if image exists */}
+                    {post.images && post.images.length > 0 && (
+                      <Link
+                        to={`/forum/${categorySlug}/${post.id}`}
+                        className="shrink-0"
+                      >
+                        <img
+                          src={post.images[0]}
+                          alt=""
+                          className="w-24 h-24 object-cover rounded border border-slate-300"
+                        />
+                      </Link>
+                    )}
+
+                    <div className="grow min-w-0">
                       <Link
                         to={`/forum/${categorySlug}/${post.id}`}
                         className="block group"
@@ -202,7 +233,7 @@ function ForumCategory() {
                         </p>
                       </Link>
 
-                      <div className="flex items-center space-x-4 text-sm text-slate-500">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
                         <span>by {author}</span>
                         <span>•</span>
                         <span>{formatDate(post.created_at)}</span>
@@ -210,6 +241,14 @@ function ForumCategory() {
                         <span>{post.reply_count} replies</span>
                         <span>•</span>
                         <span>{post.view_count} views</span>
+                        {post.images && post.images.length > 1 && (
+                          <>
+                            <span>•</span>
+                            <span className="text-emerald-600">
+                              +{post.images.length - 1} more
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -230,7 +269,10 @@ function ForumCategory() {
               Previous
             </button>
 
-            {Array.from({ length: Math.ceil(totalPosts / postsPerPage) }, (_, i) => i + 1).map((page) => (
+            {Array.from(
+              { length: Math.ceil(totalPosts / postsPerPage) },
+              (_, i) => i + 1
+            ).map((page) => (
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
@@ -246,7 +288,12 @@ function ForumCategory() {
 
             <button
               onClick={() =>
-                setCurrentPage(Math.min(Math.ceil(totalPosts / postsPerPage), currentPage + 1))
+                setCurrentPage(
+                  Math.min(
+                    Math.ceil(totalPosts / postsPerPage),
+                    currentPage + 1
+                  )
+                )
               }
               disabled={currentPage === Math.ceil(totalPosts / postsPerPage)}
               className="px-4 py-2 bg-slate-200 text-slate-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-300 transition-colors"

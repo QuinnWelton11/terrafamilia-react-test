@@ -12,6 +12,7 @@ interface RecentPost {
   created_at: string;
   last_reply_at: string | null;
   reply_count: number;
+  images?: string[];
   profiles: { username: string } | null;
   categories: { slug: string } | null;
 }
@@ -216,34 +217,61 @@ function TheCommons() {
             ) : (
               <div className="space-y-4">
                 {recentPosts.map((post) => {
-                  const categorySlug = post.categories?.slug || 'general-discussion';
-                  const author = post.profiles?.username || 'Anonymous';
-                  
+                  const categorySlug =
+                    post.categories?.slug || "general-discussion";
+                  const author = post.profiles?.username || "Anonymous";
+
                   return (
                     <div
                       key={post.id}
-                      className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-200"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-200"
                     >
-                      <div className="grow">
+                      {/* Thumbnail if image exists */}
+                      {post.images && post.images.length > 0 && (
+                        <Link
+                          to={`/forum/${categorySlug}/${post.id}`}
+                          className="shrink-0"
+                        >
+                          <img
+                            src={post.images[0]}
+                            alt=""
+                            className="w-full sm:w-16 sm:h-16 h-32 object-cover rounded border border-slate-300"
+                          />
+                        </Link>
+                      )}
+
+                      <div className="min-w-0 flex-1">
                         <Link
                           to={`/forum/${categorySlug}/${post.id}`}
                           className="block group"
                         >
-                          <h3 className="font-medium text-slate-800 group-hover:text-emerald-600 transition-colors mb-1">
+                          <h3 className="font-medium text-slate-800 group-hover:text-emerald-600 transition-colors mb-1 break-words">
                             {post.title}
                           </h3>
-                          <div className="flex items-center space-x-2 text-sm text-slate-500">
-                            <span>by {author}</span>
-                            <span>•</span>
-                            <span>{formatDate(post.created_at)}</span>
-                            <span>•</span>
-                            <span>{post.reply_count} replies</span>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">
+                            <span className="shrink-0">by {author}</span>
+                            <span className="shrink-0">•</span>
+                            <span className="shrink-0">
+                              {formatDate(post.created_at)}
+                            </span>
+                            <span className="shrink-0">•</span>
+                            <span className="shrink-0">
+                              {post.reply_count} replies
+                            </span>
+                            {post.images && post.images.length > 1 && (
+                              <>
+                                <span className="shrink-0">•</span>
+                                <span className="shrink-0 text-emerald-600">
+                                  +{post.images.length - 1} more
+                                </span>
+                              </>
+                            )}
                           </div>
                         </Link>
                       </div>
                       <Link
                         to={`/forum/${categorySlug}`}
-                        className="ml-4 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full hover:bg-emerald-200 transition-colors"
+                        className="shrink-0 self-start sm:self-center px-3 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full hover:bg-emerald-200 transition-colors whitespace-nowrap"
                       >
                         View Category
                       </Link>

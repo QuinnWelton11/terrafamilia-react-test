@@ -12,6 +12,8 @@ function CreatePost() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -25,33 +27,166 @@ function CreatePost() {
     }
   }, [isAuthenticated, navigate]);
 
+  // Category hierarchy mapping
+  const categoryHierarchy: { [key: string]: string[] } = {
+    "trading-barter": [
+      "item-skill-exchange",
+      "community-projects",
+      "free-giveaways",
+    ],
+    "knowledge-exchange": ["ask-answer", "guides-tutorials", "local-resources"],
+    "community-life": ["introductions", "events-meetups", "general-discussion"],
+    "commons-hub": ["announcements", "feedback-suggestions", "help-support"],
+  };
+
   // Set initial category from URL parameter
   useEffect(() => {
     const categoryParam = searchParams.get("category");
     if (categoryParam) {
-      setSelectedCategory(categoryParam);
+      // If it's a parent category, don't pre-select (users must choose a child)
+      const isParentCategory = categoryHierarchy[categoryParam];
+      if (!isParentCategory) {
+        setSelectedCategory(categoryParam);
+      }
     }
   }, [searchParams]);
 
-  // Available categories (slug-based, will resolve to category ID via Supabase)
-  const categories = [
-    { value: "trading-barter", label: "Trading & Barter" },
-    { value: "item-skill-exchange", label: "Item & Skill Exchange" },
-    { value: "community-projects", label: "Community Projects" },
-    { value: "free-giveaways", label: "Free Stuff / Giveaways" },
-    { value: "knowledge-exchange", label: "Knowledge Exchange" },
-    { value: "ask-answer", label: "Ask & Answer" },
-    { value: "guides-tutorials", label: "Guides & Tutorials" },
-    { value: "local-resources", label: "Local Resources" },
-    { value: "community-life", label: "Community Life" },
-    { value: "introductions", label: "Introductions" },
-    { value: "events-meetups", label: "Events & Meetups" },
-    { value: "general-discussion", label: "General Discussion" },
-    { value: "commons-hub", label: "The Commons Hub" },
-    { value: "announcements", label: "Announcements" },
-    { value: "feedback-suggestions", label: "Feedback & Suggestions" },
-    { value: "help-support", label: "Help & Support" },
+  // All categories with their parent info
+  const allCategories = [
+    // Trading & Barter children
+    {
+      value: "item-skill-exchange",
+      label: "Item & Skill Exchange",
+      parent: "trading-barter",
+    },
+    {
+      value: "community-projects",
+      label: "Community Projects",
+      parent: "trading-barter",
+    },
+    {
+      value: "free-giveaways",
+      label: "Free Stuff / Giveaways",
+      parent: "trading-barter",
+    },
+    // Knowledge Exchange children
+    {
+      value: "ask-answer",
+      label: "Ask & Answer",
+      parent: "knowledge-exchange",
+    },
+    {
+      value: "guides-tutorials",
+      label: "Guides & Tutorials",
+      parent: "knowledge-exchange",
+    },
+    {
+      value: "local-resources",
+      label: "Local Resources",
+      parent: "knowledge-exchange",
+    },
+    // Community Life children
+    {
+      value: "introductions",
+      label: "Introductions",
+      parent: "community-life",
+    },
+    {
+      value: "events-meetups",
+      label: "Events & Meetups",
+      parent: "community-life",
+    },
+    {
+      value: "general-discussion",
+      label: "General Discussion",
+      parent: "community-life",
+    },
+    // Commons Hub children
+    { value: "announcements", label: "Announcements", parent: "commons-hub" },
+    {
+      value: "feedback-suggestions",
+      label: "Feedback & Suggestions",
+      parent: "commons-hub",
+    },
+    {
+      value: "help-support",
+      label: "Help & Support",
+      parent: "commons-hub",
+    },
   ];
+
+  // Determine which categories to show
+  const getAvailableCategories = () => {
+    const categoryParam = searchParams.get("category");
+
+    // If coming from a parent category, show only its children
+    if (categoryParam && categoryHierarchy[categoryParam]) {
+      return allCategories.filter((cat) =>
+        categoryHierarchy[categoryParam].includes(cat.value)
+      );
+    }
+
+    // If coming from a child category or no category, show all
+    return allCategories;
+  };
+
+  const categories = getAvailableCategories();
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+
+    // Validate file count (max 3)
+    if (files.length + selectedFiles.length > 3) {
+      setMessage({
+        type: "error",
+        text: "Maximum 3 images allowed per post",
+      });
+      return;
+    }
+
+    // Validate each file
+    for (const file of files) {
+      // Check file size (100MB max)
+      if (file.size > 100 * 1024 * 1024) {
+        setMessage({
+          type: "error",
+          text: `${file.name} exceeds 100MB limit`,
+        });
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith("image/")) {
+        setMessage({
+          type: "error",
+          text: `${file.name} is not an image file`,
+        });
+        return;
+      }
+    }
+
+    // Add files and create previews
+    const newFiles = [...selectedFiles, ...files];
+    setSelectedFiles(newFiles);
+
+    // Create preview URLs
+    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    setImagePreviews([...imagePreviews, ...newPreviews]);
+
+    // Clear error message if validation passed
+    if (message?.type === "error") {
+      setMessage(null);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    // Revoke the preview URL to free memory
+    URL.revokeObjectURL(imagePreviews[index]);
+
+    // Remove from both arrays
+    setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
+    setImagePreviews(imagePreviews.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,19 +204,31 @@ function CreatePost() {
 
     try {
       // Get category by slug to get the ID
-      const category = await SupabaseService.getCategoryBySlug(selectedCategory);
-      
+      const category = await SupabaseService.getCategoryBySlug(
+        selectedCategory
+      );
+
+      // Upload images if any
+      let imageUrls: string[] = [];
+      if (selectedFiles.length > 0) {
+        imageUrls = await SupabaseService.uploadPostImages(selectedFiles);
+      }
+
       // Create the post
       const post = await SupabaseService.createPost({
         title: title.trim(),
         content: content.trim(),
         category_id: category.id,
+        images: imageUrls.length > 0 ? imageUrls : undefined,
       });
 
       setMessage({
         type: "success",
         text: "Post created successfully! Redirecting...",
       });
+
+      // Clean up preview URLs
+      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
 
       // Redirect to the new post
       setTimeout(() => {
@@ -224,6 +371,68 @@ function CreatePost() {
               <p className="text-xs text-slate-500 mt-1">
                 {content.length} characters
               </p>
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Images (Optional)
+              </label>
+              <div className="space-y-3">
+                {/* File Input */}
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileSelect}
+                    disabled={selectedFiles.length >= 3}
+                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    Max 3 images, 100MB each. Accepted formats: JPG, PNG, GIF,
+                    WebP
+                  </p>
+                </div>
+
+                {/* Image Previews */}
+                {imagePreviews.length > 0 && (
+                  <div className="grid grid-cols-3 gap-3">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={preview}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-md border border-slate-300"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                          title="Remove image"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                        <div className="text-xs text-slate-500 mt-1 truncate">
+                          {selectedFiles[index]?.name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Preview Section */}

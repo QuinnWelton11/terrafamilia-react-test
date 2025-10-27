@@ -5,14 +5,14 @@ import { useAuth } from "../contexts/AuthContext";
 
 function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, signOut } = useAuth();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
 
   const handleLogout = async () => {
-    await logout();
+    await signOut();
     setIsOpen(false);
   };
 

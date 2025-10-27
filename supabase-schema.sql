@@ -41,6 +41,7 @@ CREATE TABLE posts (
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   title TEXT NOT NULL,
   content TEXT NOT NULL,
+  images JSONB DEFAULT '[]'::jsonb,
   is_pinned BOOLEAN DEFAULT FALSE,
   is_locked BOOLEAN DEFAULT FALSE,
   view_count INTEGER DEFAULT 0,
@@ -199,6 +200,40 @@ CREATE POLICY "Users can update own replies"
 CREATE POLICY "Users can delete own replies"
   ON replies FOR DELETE
   USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- STORAGE BUCKET FOR POST IMAGES
+-- =============================================================================
+
+-- Create storage bucket for post images
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('post-images', 'post-images', true);
+
+-- Storage policies for post images
+CREATE POLICY "Anyone can view post images"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'post-images');
+
+CREATE POLICY "Authenticated users can upload post images"
+  ON storage.objects FOR INSERT
+  WITH CHECK (
+    bucket_id = 'post-images' 
+    AND auth.role() = 'authenticated'
+  );
+
+CREATE POLICY "Users can update own post images"
+  ON storage.objects FOR UPDATE
+  USING (
+    bucket_id = 'post-images' 
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+CREATE POLICY "Users can delete own post images"
+  ON storage.objects FOR DELETE
+  USING (
+    bucket_id = 'post-images' 
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );
 
 -- =============================================================================
 -- SEED DATA - Categories

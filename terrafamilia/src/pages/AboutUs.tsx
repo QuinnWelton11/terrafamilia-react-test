@@ -67,7 +67,7 @@ function AboutUs() {
 
           <section id="about-promise">
             <h2 className="text-xl md:text-2xl font-bold text-slate-700 mb-4">
-              Our Promise
+              Our Belief
             </h2>
             <p className="text-base md:text-lg mx-auto">
               TerraFamilia is designed to be a safe haven for open dialogue and

@@ -96,11 +96,11 @@ function SSO() {
         return false;
       }
     } else {
-      // Login validation
-      if (!formData.username || !formData.password) {
+      // Login validation - use email for login
+      if (!formData.email || !formData.password) {
         setMessage({
           type: "error",
-          text: "Please enter username and password",
+          text: "Please enter email and password",
         });
         return false;
       }
@@ -224,7 +224,7 @@ function SSO() {
                 htmlFor="email"
                 className="block text-sm font-medium text-slate-700 mb-1"
               >
-                Email Address {!isLogin && <span className="text-red-600">*</span>}
+                Email Address <span className="text-red-600">*</span>
               </label>
               <input
                 type="email"

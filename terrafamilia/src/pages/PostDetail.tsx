@@ -10,13 +10,14 @@ function PostDetail() {
     categorySlug: string;
     postId: string;
   }>();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
   const [replies, setReplies] = useState<Reply[]>([]);
   const [loading, setLoading] = useState(true);
   const [replyContent, setReplyContent] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   // Category mapping for breadcrumbs
   const categoryMap: { [key: string]: string } = {
@@ -96,8 +97,8 @@ function PostDetail() {
   };
 
   const renderReply = (reply: Reply, depth: number = 0) => {
-    const author = (reply.profiles as any)?.username || 'Anonymous';
-    
+    const author = (reply.profiles as any)?.username || "Anonymous";
+
     return (
       <div
         key={reply.id}
@@ -207,8 +208,10 @@ function PostDetail() {
     );
   }
 
-  const postAuthor = (post.profiles as any)?.username || 'Anonymous';
-  const categoryName = categorySlug ? (categoryMap[categorySlug] || categorySlug) : 'Forum';
+  const postAuthor = (post.profiles as any)?.username || "Anonymous";
+  const categoryName = categorySlug
+    ? categoryMap[categorySlug] || categorySlug
+    : "Forum";
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -238,27 +241,86 @@ function PostDetail() {
         </nav>
 
         {/* Post Content */}
-        <div className="bg-white rounded-lg shadow-md border border-slate-200 p-6 mb-8">
-          <h1 className="text-xl md:text-3xl font-bold text-slate-800 mb-4">
+        <div className="bg-white rounded-lg shadow-md border border-slate-200 p-4 md:p-6 mb-8">
+          <h1 className="text-xl md:text-3xl font-bold text-slate-800 mb-4 break-words">
             {post.title}
           </h1>
 
-          <div className="flex items-center space-x-4 text-sm text-slate-500 mb-6 pb-4 border-b border-slate-200">
-            <span>
-              by <span className="font-medium text-slate-700">{postAuthor}</span>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs md:text-sm text-slate-500 mb-6 pb-4 border-b border-slate-200">
+            <span className="break-words">
+              by{" "}
+              <span className="font-medium text-slate-700">{postAuthor}</span>
             </span>
-            <span>•</span>
-            <span>{formatDate(post.created_at)}</span>
-            <span>•</span>
-            <span>{post.view_count} views</span>
-            <span>•</span>
-            <span>{post.reply_count} replies</span>
+            <span className="hidden sm:inline">•</span>
+            <span className="shrink-0">{formatDate(post.created_at)}</span>
+            <span className="hidden sm:inline">•</span>
+            <span className="shrink-0">{post.view_count} views</span>
+            <span className="hidden sm:inline">•</span>
+            <span className="shrink-0">{post.reply_count} replies</span>
           </div>
 
           <div className="prose max-w-none">
-            <p className="text-slate-700 whitespace-pre-wrap">{post.content}</p>
+            <p className="text-slate-700 whitespace-pre-wrap break-words">
+              {post.content}
+            </p>
           </div>
+
+          {/* Image Gallery */}
+          {post.images && post.images.length > 0 && (
+            <div className="mt-6 pt-6 border-t border-slate-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {post.images.map((imageUrl, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setLightboxImage(imageUrl)}
+                    className="relative group cursor-pointer overflow-hidden rounded-md border border-slate-300 hover:border-emerald-500 transition-colors w-full"
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`Post image ${index + 1}`}
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
+                    />
+                    <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Lightbox Modal */}
+        {lightboxImage && (
+          <div
+            className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4"
+            onClick={() => setLightboxImage(null)}
+          >
+            <button
+              onClick={() => setLightboxImage(null)}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 p-2"
+              title="Close"
+            >
+              <svg
+                className="w-8 h-8"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <img
+              src={lightboxImage}
+              alt="Full size"
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
 
         {/* Reply Form (Top Level) */}
         {isAuthenticated && !replyingTo && (
