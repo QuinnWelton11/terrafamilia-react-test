@@ -1,12 +1,19 @@
-import CoverImage from "../assets/tf-coverimg-1.webp";
+import CoverImage from "../assets/tf-coverimg-1.avif";
 
 function Hero() {
   return (
-    <div
-      id="hero-wrapper"
-      className="relative h-64 w-full bg-no-repeat bg-center bg-cover"
-      style={{ backgroundImage: `url(${CoverImage})` }}
-    >
+    <div id="hero-wrapper" className="relative h-64 w-full overflow-hidden">
+      {/* Optimized hero image with high priority loading */}
+      <img
+        src={CoverImage}
+        alt="TerraFamilia Community"
+        fetchPriority="high"
+        decoding="async"
+        className="absolute inset-0 w-full h-full object-cover"
+        width="1920"
+        height="256"
+      />
+
       {/* Dark overlay for better text contrast */}
       <div className="absolute inset-0 bg-black/40"></div>
 

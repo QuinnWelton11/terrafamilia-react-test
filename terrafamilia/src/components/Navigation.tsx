@@ -94,7 +94,7 @@ function Navigation() {
       return (
         <Link
           to="/sso"
-          className="transition-all duration-300 hover:text-emerald-200 hover:scale-105 hover:underline underline-offset-4 decoration-2"
+          className="transition-all duration-300 hover:text-cyan-100 focus:text-cyan-100 hover:scale-105 hover:underline focus:underline underline-offset-4 decoration-2"
         >
           Login
         </Link>
@@ -178,7 +178,7 @@ function Navigation() {
       return (
         <Link
           to="/sso"
-          className="block py-2 transition-all duration-300 hover:text-emerald-200 hover:pl-2"
+          className="block py-2 transition-all duration-300 hover:text-cyan-100 focus:text-cyan-100 hover:scale-105 hover:underline focus:underline hover:pl-2"
           onClick={() => setIsOpen(false)}
         >
           Login
@@ -188,7 +188,7 @@ function Navigation() {
   };
 
   return (
-    <header className="bg-slate-800 text-slate-100 px-4 md:px-10 py-5">
+    <header className="bg-linear-to-r from-slate-500 via-slate-400 to-slate-500 text-slate-50 px-4 md:px-10 py-5 shadow-inner">
       <div className="flex justify-between items-center">
         <div className="flex flex-row items-center space-x-2 text-base md:text-xl">
           <img src={LogoImg} alt="" className="max-w-[3rem]" />
@@ -198,19 +198,19 @@ function Navigation() {
         <div className="hidden md:flex space-x-5 text-lg items-center">
           <Link
             to="/"
-            className="transition-all duration-300 hover:text-emerald-300 hover:scale-105 hover:underline underline-offset-4 decoration-2"
+            className="transition-all duration-300 hover:text-cyan-100 focus:text-cyan-100 hover:scale-105 hover:underline focus:underline underline-offset-4 decoration-2"
           >
             Home
           </Link>
           <Link
             to="/the-commons"
-            className="transition-all duration-300 hover:text-emerald-300 hover:scale-105 hover:underline underline-offset-4 decoration-2"
+            className="transition-all duration-300 hover:text-cyan-100 focus:text-cyan-100 hover:scale-105 hover:underline focus:underline underline-offset-4 decoration-2"
           >
             The Commons
           </Link>
           <Link
             to="/about-us"
-            className="transition-all duration-300 hover:text-emerald-300 hover:scale-105 hover:underline underline-offset-4 decoration-2"
+            className="transition-all duration-300 hover:text-cyan-100 focus:text-cyan-100 hover:scale-105 hover:underline focus:underline underline-offset-4 decoration-2"
           >
             About
           </Link>

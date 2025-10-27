@@ -19,8 +19,25 @@ export interface Profile {
   state_province?: string;
   phone_number?: string;
   is_admin: boolean;
+  is_moderator: boolean;
+  is_banned: boolean;
+  banned_at?: string;
+  banned_reason?: string;
+  banned_by?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface AdminAction {
+  id: string;
+  admin_id: string;
+  action_type: string;
+  target_type: string;
+  target_id: string;
+  reason?: string;
+  metadata?: any;
+  created_at: string;
+  admin?: Profile;
 }
 
 export interface Category {
@@ -69,6 +86,14 @@ export interface Reply {
 }
 
 class SupabaseService {
+  // ============================================================================
+  // SUPABASE CLIENT ACCESS
+  // ============================================================================
+
+  getSupabaseClient() {
+    return supabase;
+  }
+
   // ============================================================================
   // AUTH METHODS
   // ============================================================================
@@ -392,7 +417,7 @@ class SupabaseService {
       .select(
         `
         *,
-        profiles:user_id (id, username, full_name),
+        profiles:user_id (id, username, full_name, avatar_url),
         categories:category_id (id, name, slug)
       `
       )
@@ -514,7 +539,7 @@ class SupabaseService {
       .select(
         `
         *,
-        profiles:user_id (id, username, full_name)
+        profiles:user_id (id, username, full_name, avatar_url)
       `
       )
       .eq("post_id", postId)
@@ -620,7 +645,7 @@ class SupabaseService {
         last_reply_at,
         created_at,
         reply_count,
-        profiles:user_id (username),
+        profiles:user_id (id, username, full_name, avatar_url),
         categories:category_id (slug)
       `
       )
@@ -629,6 +654,343 @@ class SupabaseService {
 
     if (error) throw error;
     return data;
+  }
+
+  // ============================================================================
+  // ADMIN METHODS
+  // ============================================================================
+
+  async getAllUsers(page: number = 1, limit: number = 20, search?: string) {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    let query = supabase
+      .from("profiles")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (search) {
+      query = query.or(
+        `username.ilike.%${search}%,full_name.ilike.%${search}%,email.ilike.%${search}%`
+      );
+    }
+
+    const { data, error, count } = await query;
+
+    if (error) throw error;
+
+    return {
+      users: data,
+      total: count || 0,
+      page,
+      totalPages: Math.ceil((count || 0) / limit),
+    };
+  }
+
+  async assignModeratorRole(userId: string, isModerator: boolean) {
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error("Must be authenticated");
+
+    const profile = await this.getProfile(user.id);
+    if (!profile.is_admin) {
+      throw new Error("Only admins can assign moderator roles");
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({ is_moderator: isModerator })
+      .eq("id", userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Log admin action
+    await supabase.rpc("log_admin_action", {
+      p_admin_id: user.id,
+      p_action_type: isModerator ? "assign_moderator" : "remove_moderator",
+      p_target_type: "user",
+      p_target_id: userId,
+    });
+
+    return data;
+  }
+
+  async banUser(userId: string, reason: string) {
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error("Must be authenticated");
+
+    const profile = await this.getProfile(user.id);
+    if (!profile.is_admin && !profile.is_moderator) {
+      throw new Error("Only admins and moderators can ban users");
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({
+        is_banned: true,
+        banned_at: new Date().toISOString(),
+        banned_reason: reason,
+        banned_by: user.id,
+      })
+      .eq("id", userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Log admin action
+    await supabase.rpc("log_admin_action", {
+      p_admin_id: user.id,
+      p_action_type: "ban_user",
+      p_target_type: "user",
+      p_target_id: userId,
+      p_reason: reason,
+    });
+
+    return data;
+  }
+
+  async unbanUser(userId: string) {
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error("Must be authenticated");
+
+    const profile = await this.getProfile(user.id);
+    if (!profile.is_admin && !profile.is_moderator) {
+      throw new Error("Only admins and moderators can unban users");
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({
+        is_banned: false,
+        banned_at: null,
+        banned_reason: null,
+        banned_by: null,
+      })
+      .eq("id", userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Log admin action
+    await supabase.rpc("log_admin_action", {
+      p_admin_id: user.id,
+      p_action_type: "unban_user",
+      p_target_type: "user",
+      p_target_id: userId,
+    });
+
+    return data;
+  }
+
+  async deletePostAsAdmin(postId: string, reason?: string) {
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error("Must be authenticated");
+
+    const profile = await this.getProfile(user.id);
+    if (!profile.is_admin && !profile.is_moderator) {
+      throw new Error("Only admins and moderators can delete posts");
+    }
+
+    const { error } = await supabase.from("posts").delete().eq("id", postId);
+
+    if (error) throw error;
+
+    // Log admin action
+    await supabase.rpc("log_admin_action", {
+      p_admin_id: user.id,
+      p_action_type: "delete_post",
+      p_target_type: "post",
+      p_target_id: postId,
+      p_reason: reason,
+    });
+  }
+
+  async deleteReplyAsAdmin(replyId: string, reason?: string) {
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error("Must be authenticated");
+
+    const profile = await this.getProfile(user.id);
+    if (!profile.is_admin && !profile.is_moderator) {
+      throw new Error("Only admins and moderators can delete replies");
+    }
+
+    const { error } = await supabase.from("replies").delete().eq("id", replyId);
+
+    if (error) throw error;
+
+    // Log admin action
+    await supabase.rpc("log_admin_action", {
+      p_admin_id: user.id,
+      p_action_type: "delete_reply",
+      p_target_type: "reply",
+      p_target_id: replyId,
+      p_reason: reason,
+    });
+  }
+
+  async getAdminActions(page: number = 1, limit: number = 50) {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    const { data, error, count } = await supabase
+      .from("admin_actions")
+      .select(
+        `
+        *,
+        admin:admin_id (id, username, full_name)
+      `,
+        { count: "exact" }
+      )
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (error) throw error;
+
+    return {
+      actions: data,
+      total: count || 0,
+      page,
+      totalPages: Math.ceil((count || 0) / limit),
+    };
+  }
+
+  async getDashboardStats() {
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error("Must be authenticated");
+
+    const profile = await this.getProfile(user.id);
+    if (!profile.is_admin && !profile.is_moderator) {
+      throw new Error("Only admins and moderators can view dashboard stats");
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayISO = today.toISOString();
+
+    // Get total users
+    const { count: totalUsers } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true });
+
+    // Get today's new users
+    const { count: todayUsers } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", todayISO);
+
+    // Get banned users
+    const { count: bannedUsers } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("is_banned", true);
+
+    // Get moderators
+    const { count: moderators } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("is_moderator", true);
+
+    // Get total posts
+    const { count: totalPosts } = await supabase
+      .from("posts")
+      .select("*", { count: "exact", head: true });
+
+    // Get today's posts
+    const { count: todayPosts } = await supabase
+      .from("posts")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", todayISO);
+
+    // Get total replies
+    const { count: totalReplies } = await supabase
+      .from("replies")
+      .select("*", { count: "exact", head: true });
+
+    // Get today's replies
+    const { count: todayReplies } = await supabase
+      .from("replies")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", todayISO);
+
+    // Get recent admin actions
+    const { data: recentActions } = await supabase
+      .from("admin_actions")
+      .select(
+        `
+        *,
+        admin:admin_id (username)
+      `
+      )
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    return {
+      totalUsers: totalUsers || 0,
+      todayUsers: todayUsers || 0,
+      bannedUsers: bannedUsers || 0,
+      moderators: moderators || 0,
+      totalPosts: totalPosts || 0,
+      todayPosts: todayPosts || 0,
+      totalReplies: totalReplies || 0,
+      todayReplies: todayReplies || 0,
+      recentActions: recentActions || [],
+    };
+  }
+
+  async getTopContributor() {
+    try {
+      // Get all posts
+      const { data: posts, error } = await supabase
+        .from("posts")
+        .select("user_id");
+
+      if (error || !posts || posts.length === 0) {
+        console.error("Error fetching posts:", error);
+        return null;
+      }
+
+      // Count posts per user
+      const counts: Record<string, number> = {};
+      posts.forEach((post: any) => {
+        counts[post.user_id] = (counts[post.user_id] || 0) + 1;
+      });
+
+      // Find user with most posts
+      const topUserEntry = Object.entries(counts).sort(
+        (a, b) => b[1] - a[1]
+      )[0];
+
+      if (!topUserEntry) return null;
+
+      const [topUserId, postCount] = topUserEntry;
+
+      // Get that user's profile
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, username, full_name, avatar_url")
+        .eq("id", topUserId)
+        .single();
+
+      if (profileError || !profile) {
+        console.error("Error fetching profile:", profileError);
+        return null;
+      }
+
+      return {
+        id: profile.id,
+        username: profile.username,
+        fullName: profile.full_name,
+        avatarUrl: profile.avatar_url,
+        postCount: postCount,
+      };
+    } catch (error) {
+      console.error("Error in getTopContributor:", error);
+      return null;
+    }
   }
 }
 

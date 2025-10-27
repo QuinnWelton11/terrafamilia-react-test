@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import Cover from "../components/CoverImg";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -17,6 +17,7 @@ interface FormData {
 function SSO() {
   const [isLogin, setIsLogin] = useState(true);
   const { signIn, signUp, isAuthenticated } = useAuth();
+  const location = useLocation();
   const [formData, setFormData] = useState<FormData>({
     username: "",
     email: "",
@@ -38,9 +39,11 @@ function SSO() {
   // Check if user is already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/the-commons");
+      // Redirect to the page they were trying to access, or default to /the-commons
+      const from = (location.state as any)?.from?.pathname || "/the-commons";
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, location]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

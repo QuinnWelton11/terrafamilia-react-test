@@ -1,10 +1,27 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>terrafamilia</title>
+    <meta
+      name="description"
+      content="TerraFamilia - Join the Community Family"
+    />
+    <title>TerraFamilia</title>
+
+    <!-- Preload critical assets -->
+    <link
+      rel="preload"
+      href="/src/assets/tf-coverimg-1.avif"
+      as="image"
+      type="image/avif"
+      fetchpriority="high"
+    />
+
+    <!-- Optimize font loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="dns-prefetch" href="https://ui-avatars.com" />
   </head>
   <body>
     <div id="root"></div>

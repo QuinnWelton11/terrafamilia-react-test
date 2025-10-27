@@ -8,7 +8,7 @@ function PostDetail() {
     categorySlug: string;
     postId: string;
   }>();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
   const [replies, setReplies] = useState<Reply[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,30 +96,61 @@ function PostDetail() {
 
   const renderReply = (reply: Reply, depth: number = 0) => {
     const author = (reply.profiles as any)?.username || "Anonymous";
+    const authorName = (reply.profiles as any)?.full_name || "Anonymous";
+    const authorId = (reply.profiles as any)?.id;
+    const authorAvatar = (reply.profiles as any)?.avatar_url;
+    const isOwnReply = user && authorId === user.id;
 
     return (
       <div
         key={reply.id}
         className={`${
-          depth > 0 ? "ml-8 mt-4" : "mt-6"
+          depth > 0 ? "ml-4 sm:ml-8 mt-4" : "mt-6"
         } bg-slate-50 rounded-lg p-4 border border-slate-200`}
       >
-        <div className="flex justify-between items-center mb-2">
-          <div className="text-sm text-slate-500">
-            <span className="font-medium text-slate-800">{author}</span>
-            <span className="mx-2">•</span>
-            <span>{formatDate(reply.created_at)}</span>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-3">
+          {/* Author Info with Avatar */}
+          <div className="flex items-center gap-3 min-w-0">
+            <Link
+              to={isOwnReply ? "/profile" : `/user/${authorId}`}
+              className="shrink-0"
+            >
+              <img
+                src={
+                  authorAvatar ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    authorName
+                  )}&background=10b981&color=fff&bold=true&size=64`
+                }
+                alt={authorName}
+                className="w-10 h-10 rounded-full border-2 border-emerald-400 hover:border-emerald-500 transition-colors"
+              />
+            </Link>
+            <div className="min-w-0 flex-1">
+              <Link
+                to={isOwnReply ? "/profile" : `/user/${authorId}`}
+                className="block hover:text-emerald-600 transition-colors"
+              >
+                <span className="font-medium text-slate-800">{authorName}</span>
+                <span className="text-slate-500 text-sm"> (@{author})</span>
+              </Link>
+              <span className="text-xs sm:text-sm text-slate-500">
+                {formatDate(reply.created_at)}
+              </span>
+            </div>
           </div>
           {isAuthenticated && (
             <button
               onClick={() => setReplyingTo(reply.id)}
-              className="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+              className="shrink-0 text-emerald-600 hover:text-emerald-700 text-sm font-medium self-start sm:self-auto"
             >
               Reply
             </button>
           )}
         </div>
-        <p className="text-slate-700 whitespace-pre-wrap">{reply.content}</p>
+        <p className="text-slate-700 whitespace-pre-wrap wrap-break-word">
+          {reply.content}
+        </p>
 
         {/* Reply form for this specific reply */}
         {replyingTo === reply.id && (
@@ -168,13 +199,11 @@ function PostDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <main className="grow container mx-auto px-6 py-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
-            <p className="mt-4 text-slate-600">Loading post...</p>
-          </div>
-        </main>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mx-auto"></div>
+          <p className="mt-4 text-slate-600 text-lg">Loading post...</p>
+        </div>
       </div>
     );
   }
@@ -203,6 +232,10 @@ function PostDetail() {
   }
 
   const postAuthor = (post.profiles as any)?.username || "Anonymous";
+  const postAuthorName = (post.profiles as any)?.full_name || "Anonymous";
+  const postAuthorId = (post.profiles as any)?.id;
+  const postAuthorAvatar = (post.profiles as any)?.avatar_url;
+  const isOwnPost = user && postAuthorId === user.id;
   const categoryName = categorySlug
     ? categoryMap[categorySlug] || categorySlug
     : "Forum";
@@ -234,25 +267,51 @@ function PostDetail() {
 
         {/* Post Content */}
         <div className="bg-white rounded-lg shadow-md border border-slate-200 p-4 md:p-6 mb-8">
-          <h1 className="text-xl md:text-3xl font-bold text-slate-800 mb-4 break-words">
+          <h1 className="text-xl md:text-3xl font-bold text-slate-800 mb-4 wrap-break-word">
             {post.title}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs md:text-sm text-slate-500 mb-6 pb-4 border-b border-slate-200">
-            <span className="break-words">
-              by{" "}
-              <span className="font-medium text-slate-700">{postAuthor}</span>
-            </span>
-            <span className="hidden sm:inline">•</span>
-            <span className="shrink-0">{formatDate(post.created_at)}</span>
-            <span className="hidden sm:inline">•</span>
-            <span className="shrink-0">{post.view_count} views</span>
-            <span className="hidden sm:inline">•</span>
-            <span className="shrink-0">{post.reply_count} replies</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 mb-6 border-b border-slate-200">
+            {/* Author Avatar */}
+            <Link
+              to={isOwnPost ? "/profile" : `/user/${postAuthorId}`}
+              className="shrink-0"
+            >
+              <img
+                src={
+                  postAuthorAvatar ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    postAuthorName
+                  )}&background=10b981&color=fff&bold=true&size=80`
+                }
+                alt={postAuthorName}
+                className="w-12 h-12 rounded-full border-2 border-emerald-400 hover:border-emerald-500 transition-colors"
+              />
+            </Link>
+
+            {/* Post Metadata */}
+            <div className="flex flex-col gap-2 min-w-0 flex-1">
+              <Link
+                to={isOwnPost ? "/profile" : `/user/${postAuthorId}`}
+                className="text-sm hover:text-emerald-600 transition-colors"
+              >
+                <span className="font-medium text-slate-700">
+                  {postAuthorName}
+                </span>
+                <span className="text-slate-500"> (@{postAuthor})</span>
+              </Link>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs md:text-sm text-slate-500">
+                <span className="shrink-0">{formatDate(post.created_at)}</span>
+                <span className="shrink-0">•</span>
+                <span className="shrink-0">{post.view_count} views</span>
+                <span className="shrink-0">•</span>
+                <span className="shrink-0">{post.reply_count} replies</span>
+              </div>
+            </div>
           </div>
 
           <div className="prose max-w-none">
-            <p className="text-slate-700 whitespace-pre-wrap break-words">
+            <p className="text-slate-700 whitespace-pre-wrap wrap-break-word">
               {post.content}
             </p>
           </div>
