@@ -2,19 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import Nav from "../components/Navigation";
 import Footer from "../components/Footer";
-import ApiService from "../services/api";
+import SupabaseService, { type Post } from "../services/supabase";
 import { useAuth } from "../contexts/AuthContext";
-
-interface Post {
-  id: number;
-  title: string;
-  content: string;
-  author: string;
-  category_id: number;
-  created_at: string;
-  replies_count: number;
-  views: number;
-}
 
 function ForumCategory() {
   const { categorySlug } = useParams<{ categorySlug: string }>();
@@ -22,49 +11,49 @@ function ForumCategory() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPosts, setTotalPosts] = useState(0);
   const [categoryName, setCategoryName] = useState("");
+  const postsPerPage = 10;
 
-  // Map category slugs to display names and IDs
-  const categoryMap: { [key: string]: { name: string; id: number } } = {
-    "trading-barter": { name: "Trading & Barter", id: 1 },
-    "knowledge-exchange": { name: "Knowledge Exchange", id: 2 },
-    "community-life": { name: "Community Life", id: 3 },
-    "commons-hub": { name: "The Commons Hub", id: 4 },
-    "item-skill-exchange": { name: "Item & Skill Exchange", id: 2 },
-    "community-projects": { name: "Community Projects", id: 2 },
-    "free-giveaways": { name: "Free Stuff / Giveaways", id: 4 },
-    "ask-answer": { name: "Ask & Answer", id: 2 },
-    "guides-tutorials": { name: "Guides & Tutorials", id: 2 },
-    "local-resources": { name: "Local Resources", id: 2 },
-    introductions: { name: "Introductions", id: 3 },
-    "events-meetups": { name: "Events & Meetups", id: 3 },
-    "general-discussion": { name: "General Discussion", id: 3 },
-    announcements: { name: "Announcements", id: 4 },
-    "feedback-suggestions": { name: "Feedback & Suggestions", id: 4 },
-    "help-support": { name: "Help & Support", id: 4 },
+  // Map category slugs to display names (no longer need IDs since we'll fetch by slug)
+  const categoryDisplayNames: { [key: string]: string } = {
+    "trading-barter": "Trading & Barter",
+    "knowledge-exchange": "Knowledge Exchange",
+    "community-life": "Community Life",
+    "commons-hub": "The Commons Hub",
+    "item-skill-exchange": "Item & Skill Exchange",
+    "community-projects": "Community Projects",
+    "free-giveaways": "Free Stuff / Giveaways",
+    "ask-answer": "Ask & Answer",
+    "guides-tutorials": "Guides & Tutorials",
+    "local-resources": "Local Resources",
+    introductions: "Introductions",
+    "events-meetups": "Events & Meetups",
+    "general-discussion": "General Discussion",
+    announcements: "Announcements",
+    "feedback-suggestions": "Feedback & Suggestions",
+    "help-support": "Help & Support",
   };
 
   useEffect(() => {
     const fetchPosts = async () => {
       if (!categorySlug) return;
 
-      const categoryInfo = categoryMap[categorySlug];
-      if (!categoryInfo) return;
-
-      setCategoryName(categoryInfo.name);
+      setCategoryName(categoryDisplayNames[categorySlug] || categorySlug);
 
       try {
-        const response = await ApiService.getPosts({
-          category_id: categoryInfo.id,
+        // First get the category ID from slug
+        const category = await SupabaseService.getCategoryBySlug(categorySlug);
+        
+        // Then fetch posts for this category
+        const result = await SupabaseService.getPosts({
+          category_id: category.id,
           page: currentPage,
-          limit: 10,
+          limit: postsPerPage,
         });
 
-        if (response.success) {
-          setPosts(response.posts || []);
-          setTotalPages(Math.ceil((response.total || 0) / 10));
-        }
+        setPosts(result.posts || []);
+        setTotalPosts(result.total);
       } catch (error) {
         console.error("Failed to fetch posts:", error);
       } finally {
@@ -89,7 +78,7 @@ function ForumCategory() {
     return (
       <div className="min-h-screen flex flex-col">
         <Nav />
-        <main className="flex-grow container mx-auto px-6 py-8">
+        <main className="grow container mx-auto px-6 py-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
             <p className="mt-4 text-slate-600">Loading posts...</p>
@@ -104,7 +93,7 @@ function ForumCategory() {
     <div className="min-h-screen flex flex-col">
       <Nav />
 
-      <main className="flex-grow container mx-auto px-6 py-8">
+      <main className="grow container mx-auto px-6 py-8">
         {/* Breadcrumb */}
         <nav className="mb-6">
           <ol className="flex items-center space-x-2 text-sm text-slate-600">
@@ -190,44 +179,48 @@ function ForumCategory() {
           </div>
         ) : (
           <div className="space-y-4">
-            {posts.map((post) => (
-              <div
-                key={post.id}
-                className="bg-white rounded-lg shadow-md border border-slate-200 p-6 hover:shadow-lg transition-shadow duration-300"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-grow">
-                    <Link
-                      to={`/forum/${categorySlug}/${post.id}`}
-                      className="block group"
-                    >
-                      <h2 className="text-lg md:text-xl font-semibold text-slate-800 mb-2 group-hover:text-emerald-600 transition-colors">
-                        {post.title}
-                      </h2>
-                      <p className="text-sm md:text-base text-slate-600 mb-3 line-clamp-2">
-                        {post.content.substring(0, 200)}
-                        {post.content.length > 200 && "..."}
-                      </p>
-                    </Link>
+            {posts.map((post) => {
+              const author = (post.profiles as any)?.username || 'Anonymous';
+              
+              return (
+                <div
+                  key={post.id}
+                  className="bg-white rounded-lg shadow-md border border-slate-200 p-6 hover:shadow-lg transition-shadow duration-300"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="grow">
+                      <Link
+                        to={`/forum/${categorySlug}/${post.id}`}
+                        className="block group"
+                      >
+                        <h2 className="text-lg md:text-xl font-semibold text-slate-800 mb-2 group-hover:text-emerald-600 transition-colors">
+                          {post.title}
+                        </h2>
+                        <p className="text-sm md:text-base text-slate-600 mb-3 line-clamp-2">
+                          {post.content.substring(0, 200)}
+                          {post.content.length > 200 && "..."}
+                        </p>
+                      </Link>
 
-                    <div className="flex items-center space-x-4 text-sm text-slate-500">
-                      <span>by {post.author}</span>
-                      <span>•</span>
-                      <span>{formatDate(post.created_at)}</span>
-                      <span>•</span>
-                      <span>{post.replies_count} replies</span>
-                      <span>•</span>
-                      <span>{post.views} views</span>
+                      <div className="flex items-center space-x-4 text-sm text-slate-500">
+                        <span>by {author}</span>
+                        <span>•</span>
+                        <span>{formatDate(post.created_at)}</span>
+                        <span>•</span>
+                        <span>{post.reply_count} replies</span>
+                        <span>•</span>
+                        <span>{post.view_count} views</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {totalPosts > postsPerPage && (
           <div className="flex justify-center mt-8 space-x-2">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
@@ -237,7 +230,7 @@ function ForumCategory() {
               Previous
             </button>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            {Array.from({ length: Math.ceil(totalPosts / postsPerPage) }, (_, i) => i + 1).map((page) => (
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
@@ -253,9 +246,9 @@ function ForumCategory() {
 
             <button
               onClick={() =>
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
+                setCurrentPage(Math.min(Math.ceil(totalPosts / postsPerPage), currentPage + 1))
               }
-              disabled={currentPage === totalPages}
+              disabled={currentPage === Math.ceil(totalPosts / postsPerPage)}
               className="px-4 py-2 bg-slate-200 text-slate-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-300 transition-colors"
             >
               Next

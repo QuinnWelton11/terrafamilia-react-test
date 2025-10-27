@@ -2,6 +2,38 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import Nav from "../components/Navigation";
 import Footer from "../components/Footer";
+import ApiService from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
+
+interface Post {
+  id: number;
+  title: string;
+  content: string;
+  author: string;
+  category_id: number;
+  created_at: string;
+  views: number;
+}
+
+interface Reply {
+  id: number;
+  content: string;
+  author: string;
+  created_at: string;
+  parent_reply_id?: number;
+  replies?: Reply[];
+}
+
+function PostDetail() {
+  const { categorySlug, postId } = useParams<{
+    categorySlug: string;
+    postId: string;
+  }>();
+  const { isAuthenticated, user } = useAuth();
+  import { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import Nav from "../components/Navigation";
+import Footer from "../components/Footer";
 import SupabaseService, { type Post, type Reply } from "../services/supabase";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -53,6 +85,54 @@ function PostDetail() {
       } catch (error) {
         console.error("Failed to fetch post details:", error);
       } finally {
+        setLoading(false;
+  const [replies, setReplies] = useState<Reply[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [replyContent, setReplyContent] = useState("");
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Category mapping for breadcrumbs
+  const categoryMap: { [key: string]: string } = {
+    "trading-barter": "Trading & Barter",
+    "knowledge-exchange": "Knowledge Exchange",
+    "community-life": "Community Life",
+    "commons-hub": "The Commons Hub",
+    "item-skill-exchange": "Item & Skill Exchange",
+    "community-projects": "Community Projects",
+    "free-giveaways": "Free Stuff / Giveaways",
+    "ask-answer": "Ask & Answer",
+    "guides-tutorials": "Guides & Tutorials",
+    "local-resources": "Local Resources",
+    introductions: "Introductions",
+    "events-meetups": "Events & Meetups",
+    "general-discussion": "General Discussion",
+    announcements: "Announcements",
+    "feedback-suggestions": "Feedback & Suggestions",
+    "help-support": "Help & Support",
+  };
+
+  useEffect(() => {
+    const fetchPostAndReplies = async () => {
+      if (!postId) return;
+
+      try {
+        // Fetch post details (you might need to create this endpoint)
+        const postResponse = await ApiService.getPosts({
+          post_id: parseInt(postId),
+        });
+        if (postResponse.success && postResponse.posts?.length > 0) {
+          setPost(postResponse.posts[0]);
+        }
+
+        // Fetch replies
+        const repliesResponse = await ApiService.getReplies(parseInt(postId));
+        if (repliesResponse.success) {
+          setReplies(organizeReplies(repliesResponse.replies || []));
+        }
+      } catch (error) {
+        console.error("Failed to fetch post details:", error);
+      } finally {
         setLoading(false);
       }
     };
@@ -60,23 +140,60 @@ function PostDetail() {
     fetchPostAndReplies();
   }, [postId]);
 
+  // Organize replies into nested structure
+  const organizeReplies = (flatReplies: Reply[]): Reply[] => {
+    const replyMap = new Map<number, Reply>();
+    const rootReplies: Reply[] = [];
+
+    // First pass: create map of all replies
+    flatReplies.forEach((reply) => {
+      replyMap.set(reply.id, { ...reply, replies: [] });
+    });
+
+    // Second pass: organize into tree structure
+    flatReplies.forEach((reply) => {
+      const replyWithChildren = replyMap.get(reply.id)!;
+      if (reply.parent_reply_id) {
+        const parent = replyMap.get(reply.parent_reply_id);
+        if (parent) {
+          parent.replies!.push(replyWithChildren);
+        } else {
+          rootReplies.push(replyWithChildren);
+        }
+      } else {
+        rootReplies.push(replyWithChildren);
+      }
+    });
+
+    return rootReplies;
+  };
+
   const handleReplySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!replyContent.trim() || !postId) return;
 
     setSubmitting(true);
     try {
-      await SupabaseService.createReply({
-        post_id: postId,
+      const response = await ApiService.createReply({
+        post_id: parseInt(postId),
         content: replyContent,
         parent_reply_id: replyingTo || undefined,
       });
 
-      // Refresh replies
-      const repliesData = await SupabaseService.getReplies(postId);
-      setReplies(repliesData);
-      setReplyContent("");
-      setReplyingTo(null);
+      if (response.success) {
+        // Refresh replies
+        const repliesResponse = await ApiService.getReplies(parseInt(postId));
+        if (repliesResponse.success) {
+          setReplies(organizeReplies(repliesResponse.replies || []));
+        }
+        setReplyContent("");
+        setReplyingTo(null);
+      } else {
+        console.error("Reply failed:", response.message);
+        alert(
+          "Failed to create reply: " + (response.message || "Unknown error")
+        );
+      }
     } catch (error) {
       console.error("Failed to create reply:", error);
       alert("Failed to create reply. Please try again.");
@@ -95,19 +212,12 @@ function PostDetail() {
     });
   };
 
-  const renderReply = (reply: Reply, depth: number = 0) => {
-    const author = (reply.profiles as any)?.username || 'Anonymous';
-    
-    return (
-      <div
-        key={reply.id}
-        className={`${
-          depth > 0 ? "ml-8 mt-4" : "mt-6"
-        } bg-slate-50 rounded-lg p-4 border border-slate-200`}
-      >
-        <div className="flex justify-between items-center mb-2">
-          <div className="text-sm text-slate-500">
-            <span className="font-medium text-slate-800">{author}</span>
+  const renderReply = (reply: Reply, depth = 0) => (
+    <div key={reply.id} className={`${depth > 0 ? "ml-8 mt-4" : "mt-6"}`}>
+      <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+        <div className="flex justify-between items-start mb-3">
+          <div className="text-sm text-slate-600">
+            <span className="font-medium text-slate-800">{reply.author}</span>
             <span className="mx-2">•</span>
             <span>{formatDate(reply.created_at)}</span>
           </div>
@@ -128,7 +238,7 @@ function PostDetail() {
             <textarea
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
-              placeholder={`Reply to ${author}...`}
+              placeholder={`Reply to ${reply.author}...`}
               className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
               rows={3}
               required
@@ -154,24 +264,24 @@ function PostDetail() {
             </div>
           </form>
         )}
-
-        {/* Nested replies */}
-        {reply.replies && reply.replies.length > 0 && (
-          <div className="mt-2">
-            {reply.replies.map((nestedReply) =>
-              renderReply(nestedReply, depth + 1)
-            )}
-          </div>
-        )}
       </div>
-    );
-  };
+
+      {/* Nested replies */}
+      {reply.replies && reply.replies.length > 0 && (
+        <div className="mt-2">
+          {reply.replies.map((nestedReply) =>
+            renderReply(nestedReply, depth + 1)
+          )}
+        </div>
+      )}
+    </div>
+  );
 
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Nav />
-        <main className="grow container mx-auto px-6 py-8">
+        <main className="flex-grow container mx-auto px-6 py-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
             <p className="mt-4 text-slate-600">Loading post...</p>
@@ -186,19 +296,19 @@ function PostDetail() {
     return (
       <div className="min-h-screen flex flex-col">
         <Nav />
-        <main className="grow container mx-auto px-6 py-8">
+        <main className="flex-grow container mx-auto px-6 py-8">
           <div className="text-center">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-4">
+            <h1 className="text-2xl font-bold text-slate-800 mb-4">
               Post Not Found
             </h1>
             <p className="text-slate-600 mb-6">
-              The post you're looking for doesn't exist or has been removed.
+              The post you're looking for doesn't exist.
             </p>
             <Link
               to="/the-commons"
-              className="text-emerald-600 hover:text-emerald-700 font-medium"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg transition-colors duration-300"
             >
-              ← Back to The Commons
+              Back to Forum
             </Link>
           </div>
         </main>
@@ -207,14 +317,11 @@ function PostDetail() {
     );
   }
 
-  const postAuthor = (post.profiles as any)?.username || 'Anonymous';
-  const categoryName = categorySlug ? (categoryMap[categorySlug] || categorySlug) : 'Forum';
-
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
 
-      <main className="grow container mx-auto px-6 py-8">
+      <main className="flex-grow container mx-auto px-6 py-8">
         {/* Breadcrumb */}
         <nav className="mb-6">
           <ol className="flex items-center space-x-2 text-sm text-slate-600">
@@ -223,17 +330,19 @@ function PostDetail() {
                 The Commons
               </Link>
             </li>
-            <li>→</li>
+            <li>/</li>
             <li>
               <Link
                 to={`/forum/${categorySlug}`}
                 className="hover:text-emerald-600"
               >
-                {categoryName}
+                {categoryMap[categorySlug || ""] || categorySlug}
               </Link>
             </li>
-            <li>→</li>
-            <li className="text-slate-400">Post</li>
+            <li>/</li>
+            <li className="text-slate-800 font-medium truncate max-w-xs">
+              {post.title}
+            </li>
           </ol>
         </nav>
 
@@ -243,77 +352,71 @@ function PostDetail() {
             {post.title}
           </h1>
 
-          <div className="flex items-center space-x-4 text-sm text-slate-500 mb-6 pb-4 border-b border-slate-200">
-            <span>
-              by <span className="font-medium text-slate-700">{postAuthor}</span>
-            </span>
+          <div className="flex items-center space-x-4 text-sm text-slate-500 mb-6">
+            <span>by {post.author}</span>
             <span>•</span>
             <span>{formatDate(post.created_at)}</span>
             <span>•</span>
-            <span>{post.view_count} views</span>
-            <span>•</span>
-            <span>{post.reply_count} replies</span>
+            <span>{post.views} views</span>
           </div>
 
           <div className="prose max-w-none">
-            <p className="text-slate-700 whitespace-pre-wrap">{post.content}</p>
+            <p className="text-slate-700 whitespace-pre-wrap leading-relaxed">
+              {post.content}
+            </p>
           </div>
         </div>
 
-        {/* Reply Form (Top Level) */}
-        {isAuthenticated && !replyingTo && (
+        {/* Reply Form */}
+        {isAuthenticated ? (
           <div className="bg-white rounded-lg shadow-md border border-slate-200 p-6 mb-8">
             <h2 className="text-lg md:text-xl font-semibold text-slate-800 mb-4">
-              Post a Reply
+              Reply to this post
             </h2>
             <form onSubmit={handleReplySubmit}>
               <textarea
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
-                placeholder="Share your thoughts..."
+                placeholder="Write your reply..."
                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-                rows={5}
+                rows={4}
                 required
               />
               <div className="flex justify-end mt-4">
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
+                  className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50 transition-colors duration-300"
                 >
                   {submitting ? "Posting..." : "Post Reply"}
                 </button>
               </div>
             </form>
           </div>
-        )}
-
-        {!isAuthenticated && (
-          <div className="bg-slate-100 rounded-lg border border-slate-300 p-6 mb-8 text-center">
+        ) : (
+          <div className="bg-slate-50 rounded-lg border border-slate-200 p-6 mb-8 text-center">
             <p className="text-slate-600 mb-4">
-              Please log in to reply to this post.
+              You must be logged in to reply to this post.
             </p>
             <Link
               to="/sso"
-              className="inline-block px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors duration-300"
             >
-              Log In
+              Login to Reply
             </Link>
           </div>
         )}
 
-        {/* Replies */}
+        {/* Replies Section */}
         <div className="bg-white rounded-lg shadow-md border border-slate-200 p-6">
           <h2 className="text-lg md:text-xl font-semibold text-slate-800 mb-4">
             Replies ({replies.length})
           </h2>
 
           {replies.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-slate-500">
-                No replies yet. Be the first to reply!
-              </p>
-            </div>
+            <p className="text-slate-500 text-center py-8">
+              No replies yet. Be the first to reply!
+            </p>
           ) : (
             <div>{replies.map((reply) => renderReply(reply))}</div>
           )}

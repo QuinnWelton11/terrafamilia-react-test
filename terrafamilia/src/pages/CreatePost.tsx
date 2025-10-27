@@ -2,14 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import Nav from "../components/Navigation";
 import Footer from "../components/Footer";
-import ApiService from "../services/api";
+import SupabaseService from "../services/supabase";
 import { useAuth } from "../contexts/AuthContext";
-
-interface CategoryOption {
-  value: string;
-  label: string;
-  id: number;
-}
 
 function CreatePost() {
   const navigate = useNavigate();
@@ -39,24 +33,24 @@ function CreatePost() {
     }
   }, [searchParams]);
 
-  // Available categories
-  const categories: CategoryOption[] = [
-    { value: "trading-barter", label: "Trading & Barter", id: 1 },
-    { value: "item-skill-exchange", label: "Item & Skill Exchange", id: 2 },
-    { value: "community-projects", label: "Community Projects", id: 2 },
-    { value: "free-giveaways", label: "Free Stuff / Giveaways", id: 4 },
-    { value: "knowledge-exchange", label: "Knowledge Exchange", id: 2 },
-    { value: "ask-answer", label: "Ask & Answer", id: 2 },
-    { value: "guides-tutorials", label: "Guides & Tutorials", id: 2 },
-    { value: "local-resources", label: "Local Resources", id: 2 },
-    { value: "community-life", label: "Community Life", id: 3 },
-    { value: "introductions", label: "Introductions", id: 3 },
-    { value: "events-meetups", label: "Events & Meetups", id: 3 },
-    { value: "general-discussion", label: "General Discussion", id: 3 },
-    { value: "commons-hub", label: "The Commons Hub", id: 4 },
-    { value: "announcements", label: "Announcements", id: 4 },
-    { value: "feedback-suggestions", label: "Feedback & Suggestions", id: 4 },
-    { value: "help-support", label: "Help & Support", id: 4 },
+  // Available categories (slug-based, will resolve to category ID via Supabase)
+  const categories = [
+    { value: "trading-barter", label: "Trading & Barter" },
+    { value: "item-skill-exchange", label: "Item & Skill Exchange" },
+    { value: "community-projects", label: "Community Projects" },
+    { value: "free-giveaways", label: "Free Stuff / Giveaways" },
+    { value: "knowledge-exchange", label: "Knowledge Exchange" },
+    { value: "ask-answer", label: "Ask & Answer" },
+    { value: "guides-tutorials", label: "Guides & Tutorials" },
+    { value: "local-resources", label: "Local Resources" },
+    { value: "community-life", label: "Community Life" },
+    { value: "introductions", label: "Introductions" },
+    { value: "events-meetups", label: "Events & Meetups" },
+    { value: "general-discussion", label: "General Discussion" },
+    { value: "commons-hub", label: "The Commons Hub" },
+    { value: "announcements", label: "Announcements" },
+    { value: "feedback-suggestions", label: "Feedback & Suggestions" },
+    { value: "help-support", label: "Help & Support" },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,44 +64,31 @@ function CreatePost() {
       return;
     }
 
-    const categoryInfo = categories.find(
-      (cat) => cat.value === selectedCategory
-    );
-    if (!categoryInfo) {
-      setMessage({
-        type: "error",
-        text: "Please select a valid category",
-      });
-      return;
-    }
-
     setSubmitting(true);
     setMessage(null);
 
     try {
-      const response = await ApiService.createPost({
+      // Get category by slug to get the ID
+      const category = await SupabaseService.getCategoryBySlug(selectedCategory);
+      
+      // Create the post
+      const post = await SupabaseService.createPost({
         title: title.trim(),
         content: content.trim(),
-        category_id: categoryInfo.id,
+        category_id: category.id,
       });
 
-      if (response.success) {
-        setMessage({
-          type: "success",
-          text: "Post created successfully! Redirecting...",
-        });
+      setMessage({
+        type: "success",
+        text: "Post created successfully! Redirecting...",
+      });
 
-        // Redirect to the forum category after successful creation
-        setTimeout(() => {
-          navigate(`/forum/${selectedCategory}`);
-        }, 1500);
-      } else {
-        setMessage({
-          type: "error",
-          text: response.message || "Failed to create post",
-        });
-      }
+      // Redirect to the new post
+      setTimeout(() => {
+        navigate(`/forum/${selectedCategory}/${post.id}`);
+      }, 1500);
     } catch (error) {
+      console.error("Failed to create post:", error);
       setMessage({
         type: "error",
         text: "An error occurred while creating your post",
@@ -121,7 +102,7 @@ function CreatePost() {
     return (
       <div className="min-h-screen flex flex-col">
         <Nav />
-        <main className="flex-grow container mx-auto px-6 py-8">
+        <main className="grow container mx-auto px-6 py-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
             <p className="mt-4 text-slate-600">Redirecting to login...</p>
@@ -136,7 +117,7 @@ function CreatePost() {
     <div className="min-h-screen flex flex-col">
       <Nav />
 
-      <main className="flex-grow container mx-auto px-6 py-8">
+      <main className="grow container mx-auto px-6 py-8">
         {/* Breadcrumb */}
         <nav className="mb-6">
           <ol className="flex items-center space-x-2 text-sm text-slate-600">

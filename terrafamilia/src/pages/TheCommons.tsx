@@ -3,69 +3,39 @@ import { Link, useNavigate } from "react-router-dom";
 import Cover from "../components/CoverImg";
 import Footer from "../components/Footer";
 import { useState, useEffect } from "react";
-import ApiService from "../services/api";
-
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  description: string;
-}
+import SupabaseService from "../services/supabase";
 
 interface RecentPost {
-  id: number;
+  id: string;
   title: string;
-  author: string;
-  category_id: number;
+  category_id: string;
   created_at: string;
-  replies_count: number;
+  last_reply_at: string | null;
+  reply_count: number;
+  profiles: { username: string } | null;
+  categories: { slug: string } | null;
 }
 
 function TheCommons() {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState<Category[]>([]);
   const [recentPosts, setRecentPosts] = useState<RecentPost[]>([]);
-  const [loading, setLoading] = useState(true);
   const [recentLoading, setRecentLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch categories
-        const categoriesResponse = await ApiService.getCategories();
-        if (categoriesResponse.success) {
-          setCategories(categoriesResponse.categories || []);
-        }
-
         // Fetch recent posts (latest 5 posts across all categories)
-        const recentResponse = await ApiService.getPosts({
-          page: 1,
-          limit: 5,
-        });
-        if (recentResponse.success) {
-          setRecentPosts(recentResponse.posts || []);
-        }
+        const recentData = await SupabaseService.getRecentActivity(5);
+        setRecentPosts(recentData as any); // Type assertion for Supabase joined data
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
-        setLoading(false);
         setRecentLoading(false);
       }
     };
 
     fetchData();
   }, []);
-
-  // Helper function to get category slug from category ID
-  const getCategorySlug = (categoryId: number): string => {
-    const categoryIdToSlug: { [key: number]: string } = {
-      1: "trading-barter",
-      2: "knowledge-exchange",
-      3: "community-life",
-      4: "commons-hub",
-    };
-    return categoryIdToSlug[categoryId] || "general-discussion";
-  };
 
   // Helper function to format date
   const formatDate = (dateString: string) => {
@@ -134,7 +104,7 @@ function TheCommons() {
     <div className="min-h-screen flex flex-col">
       <Nav />
       <Cover />
-      <div className="container mx-auto px-6 py-8 flex-grow max-w-7xl">
+      <div className="container mx-auto px-6 py-8 grow max-w-7xl">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl md:text-4xl font-bold text-slate-800 mb-4">
@@ -245,38 +215,41 @@ function TheCommons() {
               </div>
             ) : (
               <div className="space-y-4">
-                {recentPosts.map((post) => (
-                  <div
-                    key={post.id}
-                    className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-200"
-                  >
-                    <div className="flex-grow">
+                {recentPosts.map((post) => {
+                  const categorySlug = post.categories?.slug || 'general-discussion';
+                  const author = post.profiles?.username || 'Anonymous';
+                  
+                  return (
+                    <div
+                      key={post.id}
+                      className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors duration-200"
+                    >
+                      <div className="grow">
+                        <Link
+                          to={`/forum/${categorySlug}/${post.id}`}
+                          className="block group"
+                        >
+                          <h3 className="font-medium text-slate-800 group-hover:text-emerald-600 transition-colors mb-1">
+                            {post.title}
+                          </h3>
+                          <div className="flex items-center space-x-2 text-sm text-slate-500">
+                            <span>by {author}</span>
+                            <span>•</span>
+                            <span>{formatDate(post.created_at)}</span>
+                            <span>•</span>
+                            <span>{post.reply_count} replies</span>
+                          </div>
+                        </Link>
+                      </div>
                       <Link
-                        to={`/forum/${getCategorySlug(post.category_id)}/${
-                          post.id
-                        }`}
-                        className="block group"
+                        to={`/forum/${categorySlug}`}
+                        className="ml-4 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full hover:bg-emerald-200 transition-colors"
                       >
-                        <h3 className="font-medium text-slate-800 group-hover:text-emerald-600 transition-colors mb-1">
-                          {post.title}
-                        </h3>
-                        <div className="flex items-center space-x-2 text-sm text-slate-500">
-                          <span>by {post.author}</span>
-                          <span>•</span>
-                          <span>{formatDate(post.created_at)}</span>
-                          <span>•</span>
-                          <span>{post.replies_count} replies</span>
-                        </div>
+                        View Category
                       </Link>
                     </div>
-                    <Link
-                      to={`/forum/${getCategorySlug(post.category_id)}`}
-                      className="ml-4 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full hover:bg-emerald-200 transition-colors"
-                    >
-                      View Category
-                    </Link>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {/* View All Recent Posts Link */}
                 <div className="text-center pt-4 border-t border-slate-200">

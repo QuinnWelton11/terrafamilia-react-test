@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Nav from "../components/Navigation";
-import ApiService from "../services/api";
 import Cover from "../components/CoverImg";
 import Footer from "../components/Footer";
 import { useAuth } from "../contexts/AuthContext";
@@ -19,7 +18,7 @@ interface FormData {
 
 function SSO() {
   const [isLogin, setIsLogin] = useState(true);
-  const { login: authLogin, isAuthenticated } = useAuth();
+  const { signIn, signUp, isAuthenticated } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     username: "",
     email: "",
@@ -120,7 +119,8 @@ function SSO() {
 
     try {
       if (isLogin) {
-        const success = await authLogin(formData.username, formData.password);
+        // Sign in with email instead of username
+        const success = await signIn(formData.email, formData.password);
 
         if (success) {
           setMessage({
@@ -131,35 +131,32 @@ function SSO() {
         } else {
           setMessage({
             type: "error",
-            text: "Invalid username or password",
+            text: "Invalid email or password",
           });
         }
       } else {
-        const registrationData = {
-          username: formData.username,
+        // Sign up with all user data
+        const success = await signUp({
           email: formData.email,
           password: formData.password,
+          username: formData.username,
           full_name: formData.full_name,
           country: formData.country,
           state_province: formData.state_province,
           phone_number: formData.phone_number || undefined,
-        };
+        });
 
-        const response = await ApiService.register(registrationData);
-
-        if (response.success) {
+        if (success) {
           setMessage({
             type: "success",
-            text: "Registration successful! Please log in.",
+            text: "Registration successful! Redirecting...",
           });
-          setIsLogin(true);
-          setFormData((prev) => ({
-            ...prev,
-            password: "",
-            confirmPassword: "",
-          }));
+          setTimeout(() => navigate("/the-commons"), 1500);
         } else {
-          setMessage({ type: "error", text: response.message });
+          setMessage({
+            type: "error",
+            text: "Registration failed. Please try again.",
+          });
         }
       }
     } catch (error) {
@@ -221,43 +218,43 @@ function SSO() {
               </div>
             )}
 
-            {/* Username */}
+            {/* Email */}
             <div>
               <label
-                htmlFor="username"
+                htmlFor="email"
                 className="block text-sm font-medium text-slate-700 mb-1"
               >
-                Username {!isLogin && <span className="text-red-600">*</span>}
+                Email Address {!isLogin && <span className="text-red-600">*</span>}
               </label>
               <input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.username}
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white/80"
-                placeholder="Enter your username"
+                placeholder="Enter your email"
                 required
               />
             </div>
 
-            {/* Email (Registration only) */}
+            {/* Username (Registration only) */}
             {!isLogin && (
               <div>
                 <label
-                  htmlFor="email"
+                  htmlFor="username"
                   className="block text-sm font-medium text-slate-700 mb-1"
                 >
-                  Email Address <span className="text-red-500">*</span>
+                  Username <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
+                  type="text"
+                  id="username"
+                  name="username"
+                  value={formData.username}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  placeholder="Enter your email"
+                  placeholder="Enter your username"
                   required
                 />
               </div>

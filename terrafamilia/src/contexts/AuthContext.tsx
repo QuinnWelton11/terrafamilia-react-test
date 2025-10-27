@@ -1,14 +1,23 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import ApiService from "../services/api";
-import type { User } from "../services/api";
+import SupabaseService from "../services/supabase";
+import type { Profile } from "../services/supabase";
 
 interface AuthContextType {
-  user: User | null;
+  user: Profile | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
-  logout: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<boolean>;
+  signUp: (data: {
+    email: string;
+    password: string;
+    username: string;
+    full_name: string;
+    country?: string;
+    state_province?: string;
+    phone_number?: string;
+  }) => Promise<boolean>;
+  signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -27,24 +36,44 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   const isAuthenticated = !!user;
 
   useEffect(() => {
     checkAuthStatus();
+
+    // Subscribe to auth changes
+    const {
+      data: { subscription },
+    } = SupabaseService.onAuthStateChange(async (authUser) => {
+      if (authUser) {
+        try {
+          const profile = await SupabaseService.getProfile(authUser.id);
+          setUser(profile);
+        } catch (error) {
+          console.error("Failed to fetch profile:", error);
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const checkAuthStatus = async () => {
     try {
-      if (ApiService.isAuthenticated()) {
-        const response = await ApiService.getCurrentUser();
-        if (response.authenticated && response.user) {
-          setUser(response.user);
-        } else {
-          setUser(null);
-        }
+      const authUser = await SupabaseService.getCurrentUser();
+      if (authUser) {
+        const profile = await SupabaseService.getProfile(authUser.id);
+        setUser(profile);
+      } else {
+        setUser(null);
       }
     } catch (error) {
       console.error("Auth check failed:", error);
@@ -54,28 +83,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login = async (
-    username: string,
-    password: string
-  ): Promise<boolean> => {
+  const signIn = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await ApiService.login(username, password);
-
-      if (response.success && response.user) {
-        setUser(response.user);
+      const { user: authUser } = await SupabaseService.signIn(email, password);
+      if (authUser) {
+        const profile = await SupabaseService.getProfile(authUser.id);
+        setUser(profile);
         return true;
       }
       return false;
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("Sign in failed:", error);
       return false;
     }
   };
-  const logout = async (): Promise<void> => {
+
+  const signUp = async (data: {
+    email: string;
+    password: string;
+    username: string;
+    full_name: string;
+    country?: string;
+    state_province?: string;
+    phone_number?: string;
+  }): Promise<boolean> => {
     try {
-      await ApiService.logout();
+      const { user: authUser } = await SupabaseService.signUp(data);
+      if (authUser) {
+        const profile = await SupabaseService.getProfile(authUser.id);
+        setUser(profile);
+        return true;
+      }
+      return false;
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error("Sign up failed:", error);
+      return false;
+    }
+  };
+
+  const signOut = async (): Promise<void> => {
+    try {
+      await SupabaseService.signOut();
+    } catch (error) {
+      console.error("Sign out failed:", error);
     } finally {
       setUser(null);
     }
@@ -89,8 +139,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     isAuthenticated,
     loading,
-    login,
-    logout,
+    signIn,
+    signUp,
+    signOut,
     refreshUser,
   };
 
