@@ -94,7 +94,7 @@ function ForumCategory() {
       <div className="min-h-screen flex flex-col">
         <main className="grow container mx-auto px-6 py-8">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto"></div>
             <p className="mt-4 text-slate-600">Loading posts...</p>
           </div>
         </main>
@@ -109,7 +109,7 @@ function ForumCategory() {
         <nav className="mb-6">
           <ol className="flex items-center space-x-2 text-sm text-slate-600">
             <li>
-              <Link to="/the-commons" className="hover:text-emerald-600">
+              <Link to="/the-commons" className="hover:text-cyan-600">
                 The Commons
               </Link>
             </li>
@@ -134,14 +134,14 @@ function ForumCategory() {
           {isAuthenticated ? (
             <Link
               to={`/create-post?category=${categorySlug}`}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg transition-colors duration-300"
+              className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2 rounded-lg transition-colors duration-300"
             >
               Create New Post
             </Link>
           ) : (
             <Link
               to="/sso"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors duration-300"
+              className="bg-slate-600 hover:bg-slate-700 text-white px-6 py-2 rounded-lg transition-colors duration-300"
             >
               Login to Post
             </Link>
@@ -175,14 +175,14 @@ function ForumCategory() {
             {isAuthenticated ? (
               <Link
                 to={`/create-post?category=${categorySlug}`}
-                className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg transition-colors duration-300"
+                className="inline-block bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2 rounded-lg transition-colors duration-300"
               >
                 Create First Post
               </Link>
             ) : (
               <Link
                 to="/sso"
-                className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors duration-300"
+                className="inline-block bg-slate-600 hover:bg-slate-700 text-white px-6 py-2 rounded-lg transition-colors duration-300"
               >
                 Login to Create Post
               </Link>
@@ -218,7 +218,7 @@ function ForumCategory() {
                         to={`/forum/${categorySlug}/${post.id}`}
                         className="block group"
                       >
-                        <h2 className="text-lg md:text-xl font-semibold text-slate-800 mb-2 group-hover:text-emerald-600 transition-colors">
+                        <h2 className="text-lg md:text-xl font-semibold text-slate-800 mb-2 group-hover:text-cyan-600 transition-colors">
                           {post.title}
                         </h2>
                         <p className="text-sm md:text-base text-slate-600 mb-3 line-clamp-2">
@@ -238,7 +238,7 @@ function ForumCategory() {
                         {post.images && post.images.length > 1 && (
                           <>
                             <span>•</span>
-                            <span className="text-emerald-600">
+                            <span className="text-cyan-600">
                               +{post.images.length - 1} more
                             </span>
                           </>
@@ -272,7 +272,7 @@ function ForumCategory() {
                 onClick={() => setCurrentPage(page)}
                 className={`px-4 py-2 rounded-md transition-colors ${
                   currentPage === page
-                    ? "bg-emerald-600 text-white"
+                    ? "bg-cyan-600 text-white"
                     : "bg-slate-200 text-slate-600 hover:bg-slate-300"
                 }`}
               >

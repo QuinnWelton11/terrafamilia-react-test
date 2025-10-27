@@ -248,7 +248,7 @@ function CreatePost() {
       <div className="min-h-screen flex flex-col">
         <main className="grow container mx-auto px-6 py-8">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto"></div>
             <p className="mt-4 text-slate-600">Redirecting to login...</p>
           </div>
         </main>
@@ -263,7 +263,7 @@ function CreatePost() {
         <nav className="mb-6">
           <ol className="flex items-center space-x-2 text-sm text-slate-600">
             <li>
-              <Link to="/the-commons" className="hover:text-emerald-600">
+              <Link to="/the-commons" className="hover:text-cyan-600">
                 The Commons
               </Link>
             </li>
@@ -310,7 +310,7 @@ function CreatePost() {
                 id="category"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 required
               >
                 <option value="">Select a category</option>
@@ -336,7 +336,7 @@ function CreatePost() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter a descriptive title for your post"
-                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 maxLength={200}
                 required
               />
@@ -358,7 +358,7 @@ function CreatePost() {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Write your post content here..."
-                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none"
                 rows={12}
                 required
               />
@@ -381,7 +381,7 @@ function CreatePost() {
                     multiple
                     onChange={handleFileSelect}
                     disabled={selectedFiles.length >= 3}
-                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <p className="text-xs text-slate-500 mt-1">
                     Max 3 images, 100MB each. Accepted formats: JPG, PNG, GIF,
@@ -460,41 +460,39 @@ function CreatePost() {
             )}
 
             {/* Action Buttons */}
-            <div className="flex justify-between items-center pt-4 border-t border-slate-200">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pt-4 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => {
+                  setTitle("");
+                  setContent("");
+                  setSelectedCategory("");
+                  setMessage(null);
+                }}
+                className="px-6 py-2 bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 transition-colors order-1 sm:order-first"
+              >
+                Clear
+              </button>
+
+              <button
+                type="submit"
+                disabled={
+                  submitting ||
+                  !title.trim() ||
+                  !content.trim() ||
+                  !selectedCategory
+                }
+                className="px-6 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-300 order-2 sm:order-last"
+              >
+                {submitting ? "Creating Post..." : "Create Post"}
+              </button>
+
               <Link
                 to="/the-commons"
-                className="px-6 py-2 text-slate-600 hover:text-slate-800 transition-colors"
+                className="px-6 py-2 text-slate-600 hover:text-slate-800 transition-colors text-center order-3 sm:order-first"
               >
                 Cancel
               </Link>
-
-              <div className="space-x-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTitle("");
-                    setContent("");
-                    setSelectedCategory("");
-                    setMessage(null);
-                  }}
-                  className="px-6 py-2 bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 transition-colors"
-                >
-                  Clear
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={
-                    submitting ||
-                    !title.trim() ||
-                    !content.trim() ||
-                    !selectedCategory
-                  }
-                  className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-300"
-                >
-                  {submitting ? "Creating Post..." : "Create Post"}
-                </button>
-              </div>
             </div>
           </form>
         </div>

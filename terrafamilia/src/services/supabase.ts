@@ -992,6 +992,87 @@ class SupabaseService {
       return null;
     }
   }
+
+  // Notification methods
+  async getUnreadNotificationCount() {
+    const user = await this.getCurrentUser();
+    if (!user) return 0;
+
+    // Get posts created by the current user
+    const { data: userPosts } = await supabase
+      .from("posts")
+      .select("id")
+      .eq("user_id", user.id);
+
+    if (!userPosts || userPosts.length === 0) return 0;
+
+    const postIds = userPosts.map((post) => post.id);
+
+    // Get the last time user checked notifications (from profile or localStorage)
+    const lastChecked = localStorage.getItem(
+      `lastNotificationCheck_${user.id}`
+    );
+    const lastCheckedDate = lastChecked ? new Date(lastChecked) : new Date(0);
+
+    // Count new replies to user's posts since last check
+    const { data: newReplies, error } = await supabase
+      .from("replies")
+      .select("id")
+      .in("post_id", postIds)
+      .neq("user_id", user.id) // Don't count user's own replies
+      .gt("created_at", lastCheckedDate.toISOString());
+
+    if (error) {
+      console.error("Error fetching unread notifications:", error);
+      return 0;
+    }
+
+    return newReplies?.length || 0;
+  }
+
+  async markNotificationsAsRead() {
+    const user = await this.getCurrentUser();
+    if (!user) return;
+
+    // Store the current timestamp as last check time
+    localStorage.setItem(
+      `lastNotificationCheck_${user.id}`,
+      new Date().toISOString()
+    );
+  }
+
+  // Search posts
+  async searchPosts(query: string) {
+    const { data, error } = await supabase
+      .from("posts")
+      .select(
+        `
+        id,
+        title,
+        content,
+        category_id,
+        created_at,
+        last_reply_at,
+        reply_count,
+        images,
+        profiles:user_id (
+          id,
+          username,
+          full_name,
+          avatar_url
+        ),
+        categories:category_id (
+          slug
+        )
+      `
+      )
+      .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (error) throw error;
+    return data;
+  }
 }
 
 export default new SupabaseService();

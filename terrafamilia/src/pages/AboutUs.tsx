@@ -15,22 +15,13 @@ function AboutUs() {
             className="bg-slate-500 text-slate-50 text-shadow-md px-6 py-10 shadow-md"
           >
             <div className="max-w-4xl mx-auto">
-              <ScrollAnimation
-                animation="slideUp"
-                duration={1000}
-                bidirectional={true}
-              >
+              <ScrollAnimation animation="slideUp" duration={1000}>
                 <h1 className="text-2xl md:text-3xl font-bold  mb-4">
                   About Terrafamilia
                 </h1>
               </ScrollAnimation>
 
-              <ScrollAnimation
-                animation="fadeIn"
-                duration={800}
-                delay={500}
-                bidirectional={true}
-              >
+              <ScrollAnimation animation="fadeIn" duration={800} delay={500}>
                 <p className="text-base md:text-lg mx-auto">
                   Welcome to TerraFamilia — a shared space for unity, exchange,
                   and growth. Here, we believe in the power of people coming
@@ -42,11 +33,7 @@ function AboutUs() {
             </div>
           </section>
 
-          <ScrollAnimation
-            animation="slideRight"
-            duration={800}
-            bidirectional={true}
-          >
+          <ScrollAnimation animation="slideRight" duration={800}>
             <section id="about-goal" className="px-6">
               <div className="max-w-4xl mx-auto">
                 <h2 className="text-xl md:text-2xl font-bold text-slate-700 mb-4">
@@ -104,11 +91,7 @@ function AboutUs() {
             </section>
           </ScrollAnimation>
 
-          <ScrollAnimation
-            animation="slideUp"
-            duration={800}
-            bidirectional={true}
-          >
+          <ScrollAnimation animation="slideUp" duration={800}>
             <section id="about-promise" className="px-6 mb-20">
               <div className="max-w-4xl mx-auto">
                 <h2 className="text-xl md:text-2xl font-bold text-slate-700 mb-4">

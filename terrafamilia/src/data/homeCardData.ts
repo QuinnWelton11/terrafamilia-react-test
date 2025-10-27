@@ -16,7 +16,7 @@ export const homeCardData: HomeCardData[] = [
     id: 1,
     title: "Welcome",
     message:
-      "Welcome to TerraFamilia — a community grounded in connection, respect, and shared purpose. Here, we come together to trade, learn, and grow as one global family, rooted in the spirit of unity and care for one another.",
+      "Welcome to TerraFamilia — a digital community grounded in connection and shared purpose. Here we can come together to Trade, Learn and Grow as one gloabl family, sharing and caring for each other.",
     route: "/about-us",
     buttonText: "Learn More",
     icon: GraduationCap,
@@ -25,7 +25,7 @@ export const homeCardData: HomeCardData[] = [
     id: 2,
     title: "The Commons",
     message:
-      "Step into The Commons, the heart of TerraFamilia — a shared space for open exchange. Post, barter, share wisdom, and build meaningful connections in an environment built on trust, inclusivity, and cooperation.",
+      "Step into The Commons, the heart of TerraFamilia — a shared space for open exchange. Share wisdom, skills, barter or volunteer. Build meaningful connections and share with your global family.",
     route: "/the-commons",
     buttonText: "Visit Commons",
     icon: Users,
@@ -34,7 +34,7 @@ export const homeCardData: HomeCardData[] = [
     id: 3,
     title: "Sign Up",
     message:
-      "Join our growing community and become part of something real. Register to take part in The Commons — to post, trade, share ideas, and help cultivate a space where everyone belongs. Your voice, your values, and your privacy all matter here.",
+      "Join the Terrafamilia community and help a digital commons. We are here to steward for our planet, not to own & control it.",
     route: "/sso",
     buttonText: "Register",
     icon: UserPlus,

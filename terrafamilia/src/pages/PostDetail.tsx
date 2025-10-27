@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import SupabaseService, { type Post, type Reply } from "../services/supabase";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -9,6 +9,7 @@ function PostDetail() {
     postId: string;
   }>();
   const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
   const [post, setPost] = useState<Post | null>(null);
   const [replies, setReplies] = useState<Reply[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,6 +17,10 @@ function PostDetail() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [isEditingPost, setIsEditingPost] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Category mapping for breadcrumbs
   const categoryMap: { [key: string]: string } = {
@@ -38,26 +43,26 @@ function PostDetail() {
   };
 
   useEffect(() => {
-    const fetchPostAndReplies = async () => {
-      if (!postId) return;
-
-      try {
-        // Fetch post details
-        const postData = await SupabaseService.getPostById(postId);
-        setPost(postData);
-
-        // Fetch replies
-        const repliesData = await SupabaseService.getReplies(postId);
-        setReplies(repliesData);
-      } catch (error) {
-        console.error("Failed to fetch post details:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPostAndReplies();
   }, [postId]);
+
+  const fetchPostAndReplies = async () => {
+    if (!postId) return;
+
+    try {
+      // Fetch post details
+      const postData = await SupabaseService.getPostById(postId);
+      setPost(postData);
+
+      // Fetch replies
+      const repliesData = await SupabaseService.getReplies(postId);
+      setReplies(repliesData);
+    } catch (error) {
+      console.error("Failed to fetch post details:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleReplySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,9 +76,8 @@ function PostDetail() {
         parent_reply_id: replyingTo || undefined,
       });
 
-      // Refresh replies
-      const repliesData = await SupabaseService.getReplies(postId);
-      setReplies(repliesData);
+      // Refresh both post data and replies to get updated reply count
+      await fetchPostAndReplies();
       setReplyContent("");
       setReplyingTo(null);
     } catch (error) {
@@ -81,6 +85,48 @@ function PostDetail() {
       alert("Failed to create reply. Please try again.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleEditPost = () => {
+    if (!post) return;
+    setEditTitle(post.title);
+    setEditContent(post.content);
+    setIsEditingPost(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!postId || !editTitle.trim() || !editContent.trim()) return;
+
+    setSubmitting(true);
+    try {
+      await SupabaseService.updatePost(postId, {
+        title: editTitle,
+        content: editContent,
+      });
+      await fetchPostAndReplies();
+      setIsEditingPost(false);
+    } catch (error) {
+      console.error("Failed to update post:", error);
+      alert("Failed to update post. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeletePost = async () => {
+    if (!postId) return;
+
+    setSubmitting(true);
+    try {
+      await SupabaseService.deletePost(postId);
+      navigate(`/forum/${categorySlug}`);
+    } catch (error) {
+      console.error("Failed to delete post:", error);
+      alert("Failed to delete post. Please try again.");
+    } finally {
+      setSubmitting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -123,13 +169,13 @@ function PostDetail() {
                   )}&background=10b981&color=fff&bold=true&size=64`
                 }
                 alt={authorName}
-                className="w-10 h-10 rounded-full border-2 border-emerald-400 hover:border-emerald-500 transition-colors"
+                className="w-10 h-10 rounded-full border-2 border-cyan-400 hover:border-cyan-500 transition-colors"
               />
             </Link>
             <div className="min-w-0 flex-1">
               <Link
                 to={isOwnReply ? "/profile" : `/user/${authorId}`}
-                className="block hover:text-emerald-600 transition-colors"
+                className="block hover:text-cyan-600 transition-colors"
               >
                 <span className="font-medium text-slate-800">{authorName}</span>
                 <span className="text-slate-500 text-sm"> (@{author})</span>
@@ -142,7 +188,7 @@ function PostDetail() {
           {isAuthenticated && (
             <button
               onClick={() => setReplyingTo(reply.id)}
-              className="shrink-0 text-emerald-600 hover:text-emerald-700 text-sm font-medium self-start sm:self-auto"
+              className="shrink-0 text-cyan-600 hover:text-cyan-700 text-sm font-medium self-start sm:self-auto"
             >
               Reply
             </button>
@@ -159,7 +205,7 @@ function PostDetail() {
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
               placeholder={`Reply to ${author}...`}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
               rows={3}
               required
             />
@@ -177,7 +223,7 @@ function PostDetail() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
+                className="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 disabled:opacity-50"
               >
                 {submitting ? "Posting..." : "Post Reply"}
               </button>
@@ -201,7 +247,7 @@ function PostDetail() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-cyan-500 mx-auto"></div>
           <p className="mt-4 text-slate-600 text-lg">Loading post...</p>
         </div>
       </div>
@@ -221,7 +267,7 @@ function PostDetail() {
             </p>
             <Link
               to="/the-commons"
-              className="text-emerald-600 hover:text-emerald-700 font-medium"
+              className="text-cyan-600 hover:text-cyan-700 font-medium"
             >
               ← Back to The Commons
             </Link>
@@ -247,7 +293,7 @@ function PostDetail() {
         <nav className="mb-6">
           <ol className="flex items-center space-x-2 text-sm text-slate-600">
             <li>
-              <Link to="/the-commons" className="hover:text-emerald-600">
+              <Link to="/the-commons" className="hover:text-cyan-600">
                 The Commons
               </Link>
             </li>
@@ -255,7 +301,7 @@ function PostDetail() {
             <li>
               <Link
                 to={`/forum/${categorySlug}`}
-                className="hover:text-emerald-600"
+                className="hover:text-cyan-600"
               >
                 {categoryName}
               </Link>
@@ -267,77 +313,171 @@ function PostDetail() {
 
         {/* Post Content */}
         <div className="bg-white rounded-lg shadow-md border border-slate-200 p-4 md:p-6 mb-8">
-          <h1 className="text-xl md:text-3xl font-bold text-slate-800 mb-4 wrap-break-word">
-            {post.title}
-          </h1>
-
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 mb-6 border-b border-slate-200">
-            {/* Author Avatar */}
-            <Link
-              to={isOwnPost ? "/profile" : `/user/${postAuthorId}`}
-              className="shrink-0"
-            >
-              <img
-                src={
-                  postAuthorAvatar ||
-                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                    postAuthorName
-                  )}&background=10b981&color=fff&bold=true&size=80`
-                }
-                alt={postAuthorName}
-                className="w-12 h-12 rounded-full border-2 border-emerald-400 hover:border-emerald-500 transition-colors"
+          {isEditingPost ? (
+            // Edit Mode
+            <div>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="w-full px-3 py-2 mb-4 text-xl md:text-3xl font-bold border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="Post title"
               />
-            </Link>
-
-            {/* Post Metadata */}
-            <div className="flex flex-col gap-2 min-w-0 flex-1">
-              <Link
-                to={isOwnPost ? "/profile" : `/user/${postAuthorId}`}
-                className="text-sm hover:text-emerald-600 transition-colors"
-              >
-                <span className="font-medium text-slate-700">
-                  {postAuthorName}
-                </span>
-                <span className="text-slate-500"> (@{postAuthor})</span>
-              </Link>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs md:text-sm text-slate-500">
-                <span className="shrink-0">{formatDate(post.created_at)}</span>
-                <span className="shrink-0">•</span>
-                <span className="shrink-0">{post.view_count} views</span>
-                <span className="shrink-0">•</span>
-                <span className="shrink-0">{post.reply_count} replies</span>
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="w-full px-3 py-2 mb-4 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
+                rows={10}
+                placeholder="Post content"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={
+                    submitting || !editTitle.trim() || !editContent.trim()
+                  }
+                  className="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 disabled:opacity-50 transition-colors"
+                >
+                  {submitting ? "Saving..." : "Save Changes"}
+                </button>
+                <button
+                  onClick={() => setIsEditingPost(false)}
+                  disabled={submitting}
+                  className="px-4 py-2 bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 transition-colors"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
-          </div>
+          ) : (
+            // View Mode
+            <>
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <h1 className="text-xl md:text-3xl font-bold text-slate-800 wrap-break-word flex-1">
+                  {post.title}
+                </h1>
+                {isOwnPost && (
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      onClick={handleEditPost}
+                      className="px-3 py-1.5 text-sm bg-slate-100 text-slate-700 rounded-md hover:bg-slate-200 transition-colors"
+                      title="Edit post"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="px-3 py-1.5 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+                      title="Delete post"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
 
-          <div className="prose max-w-none">
-            <p className="text-slate-700 whitespace-pre-wrap wrap-break-word">
-              {post.content}
-            </p>
-          </div>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 pb-4 mb-6 border-b border-slate-200">
+                {/* Author Avatar */}
+                <Link
+                  to={isOwnPost ? "/profile" : `/user/${postAuthorId}`}
+                  className="shrink-0"
+                >
+                  <img
+                    src={
+                      postAuthorAvatar ||
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        postAuthorName
+                      )}&background=10b981&color=fff&bold=true&size=80`
+                    }
+                    alt={postAuthorName}
+                    className="w-12 h-12 rounded-full border-2 border-cyan-400 hover:border-cyan-500 transition-colors"
+                  />
+                </Link>
 
-          {/* Image Gallery */}
-          {post.images && post.images.length > 0 && (
-            <div className="mt-6 pt-6 border-t border-slate-200">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {post.images.map((imageUrl, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setLightboxImage(imageUrl)}
-                    className="relative group cursor-pointer overflow-hidden rounded-md border border-slate-300 hover:border-emerald-500 transition-colors w-full"
+                {/* Post Metadata */}
+                <div className="flex flex-col gap-2 min-w-0 flex-1">
+                  <Link
+                    to={isOwnPost ? "/profile" : `/user/${post.profiles?.id}`}
+                    className="text-sm hover:text-cyan-600 transition-colors"
                   >
-                    <img
-                      src={imageUrl}
-                      alt={`Post image ${index + 1}`}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
-                    />
-                    <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
-                  </button>
-                ))}
+                    <span className="font-medium text-slate-700">
+                      {postAuthorName}
+                    </span>
+                    <span className="text-slate-500"> (@{postAuthor})</span>
+                  </Link>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs md:text-sm text-slate-500">
+                    <span className="shrink-0">
+                      {formatDate(post.created_at)}
+                    </span>
+                    <span className="shrink-0">•</span>
+                    <span className="shrink-0">{post.view_count} views</span>
+                    <span className="shrink-0">•</span>
+                    <span className="shrink-0">{post.reply_count} replies</span>
+                  </div>
+                </div>
               </div>
-            </div>
+
+              <div className="prose max-w-none">
+                <p className="text-slate-700 whitespace-pre-wrap wrap-break-word">
+                  {post.content}
+                </p>
+              </div>
+
+              {/* Image Gallery */}
+              {post.images && post.images.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-slate-200">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {post.images.map((imageUrl, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setLightboxImage(imageUrl)}
+                        className="relative group cursor-pointer overflow-hidden rounded-md border border-slate-300 hover:border-cyan-500 transition-colors w-full"
+                      >
+                        <img
+                          src={imageUrl}
+                          alt={`Post image ${index + 1}`}
+                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
+                        <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold text-slate-800 mb-4">
+                Delete Post?
+              </h3>
+              <p className="text-slate-600 mb-6">
+                Are you sure you want to delete this post? This action cannot be
+                undone and will also delete all replies to this post.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={submitting}
+                  className="px-4 py-2 bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeletePost}
+                  disabled={submitting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 transition-colors"
+                >
+                  {submitting ? "Deleting..." : "Delete Post"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Lightbox Modal */}
         {lightboxImage && (
@@ -384,7 +524,7 @@ function PostDetail() {
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
                 placeholder="Share your thoughts..."
-                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
                 rows={5}
                 required
               />
@@ -392,7 +532,7 @@ function PostDetail() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
+                  className="px-6 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 disabled:opacity-50"
                 >
                   {submitting ? "Posting..." : "Post Reply"}
                 </button>
@@ -408,7 +548,7 @@ function PostDetail() {
             </p>
             <Link
               to="/sso"
-              className="inline-block px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+              className="inline-block px-6 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700"
             >
               Log In
             </Link>

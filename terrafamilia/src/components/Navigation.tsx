@@ -2,11 +2,13 @@ import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import LogoImg from "../assets/Steward-fix-2.webp";
 import { useAuth } from "../contexts/AuthContext";
+import SupabaseService from "../services/supabase";
 
 function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileProfileMenuOpen, setIsMobileProfileMenuOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const { user, isAuthenticated, signOut } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -27,6 +29,36 @@ function Navigation() {
     setIsOpen(false);
     setIsProfileMenuOpen(false);
     setIsMobileProfileMenuOpen(false);
+  };
+
+  // Fetch notification count when user is authenticated
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (isAuthenticated) {
+        const count = await SupabaseService.getUnreadNotificationCount();
+        setNotificationCount(count);
+      }
+    };
+
+    fetchNotifications();
+
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(fetchNotifications, 30000);
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  const handleProfileClick = async () => {
+    // Mark notifications as read when opening profile menu
+    if (!isProfileMenuOpen && notificationCount > 0) {
+      await SupabaseService.markNotificationsAsRead();
+      setNotificationCount(0);
+    }
+    toggleProfileMenu();
+  };
+
+  const handleMobileProfileClick = () => {
+    toggleMobileProfileMenu();
   };
 
   // Close profile menu when clicking outside
@@ -60,14 +92,20 @@ function Navigation() {
       return (
         <div className="relative" ref={profileMenuRef}>
           <button
-            onClick={toggleProfileMenu}
-            className="flex items-center space-x-2 transition-all duration-300 hover:opacity-80"
+            onClick={handleProfileClick}
+            className="flex items-center space-x-2 transition-all duration-300 hover:opacity-80 relative"
           >
             <img
               src={avatarUrl}
               alt={user.full_name}
-              className="w-10 h-10 rounded-full border-2 border-emerald-400 hover:border-emerald-300"
+              className="w-10 h-10 rounded-full border-2 border-cyan-400 hover:border-cyan-300"
             />
+            {/* Notification badge on avatar (only when menu is closed) */}
+            {!isProfileMenuOpen && notificationCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                {notificationCount}
+              </span>
+            )}
           </button>
 
           {/* Dropdown Menu */}
@@ -76,13 +114,19 @@ function Navigation() {
               <Link
                 to="/profile"
                 onClick={() => setIsProfileMenuOpen(false)}
-                className="block px-4 py-2 text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+                className="block px-4 py-2 text-slate-700 hover:bg-cyan-50 hover:text-cyan-600 transition-colors relative"
               >
-                View Profile
+                <span>View Profile</span>
+                {/* Notification badge on menu item */}
+                {notificationCount > 0 && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {notificationCount}
+                  </span>
+                )}
               </Link>
               <button
                 onClick={handleLogout}
-                className="w-full text-left px-4 py-2 text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+                className="w-full text-left px-4 py-2 text-slate-700 hover:bg-cyan-50 hover:text-cyan-600 transition-colors"
               >
                 Logout
               </button>
@@ -113,14 +157,22 @@ function Navigation() {
       return (
         <div className="relative">
           <button
-            onClick={toggleMobileProfileMenu}
-            className="flex items-center space-x-3 py-2 transition-all duration-300 hover:text-emerald-200 hover:pl-2 w-full"
+            onClick={handleMobileProfileClick}
+            className="flex items-center space-x-3 py-2 transition-all duration-300 hover:text-cyan-200 hover:pl-2 w-full relative"
           >
-            <img
-              src={avatarUrl}
-              alt={user.full_name}
-              className="w-8 h-8 rounded-full border-2 border-emerald-400"
-            />
+            <div className="relative">
+              <img
+                src={avatarUrl}
+                alt={user.full_name}
+                className="w-8 h-8 rounded-full border-2 border-cyan-400"
+              />
+              {/* Notification badge on mobile avatar (only when menu is closed) */}
+              {!isMobileProfileMenuOpen && notificationCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center animate-pulse">
+                  {notificationCount}
+                </span>
+              )}
+            </div>
             <span>Profile</span>
           </button>
 
@@ -133,7 +185,7 @@ function Navigation() {
                   setIsMobileProfileMenuOpen(false);
                   setIsOpen(false);
                 }}
-                className="flex items-center px-4 py-3 text-slate-100 hover:bg-emerald-600/20 hover:text-emerald-200 transition-colors"
+                className="flex items-center px-4 py-3 text-slate-100 hover:bg-cyan-600/20 hover:text-cyan-200 transition-colors relative"
               >
                 <svg
                   className="w-5 h-5 mr-3"
@@ -148,7 +200,13 @@ function Navigation() {
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                   />
                 </svg>
-                View Profile
+                <span>View Profile</span>
+                {/* Notification badge on mobile menu item */}
+                {notificationCount > 0 && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {notificationCount}
+                  </span>
+                )}
               </Link>
               <div className="border-t border-slate-600/50"></div>
               <button
@@ -250,7 +308,7 @@ function Navigation() {
         <div className="flex flex-col pt-4 pb-2">
           <Link
             to="/"
-            className="block py-3 transition-all duration-300 hover:text-emerald-300 hover:pl-2"
+            className="block py-3 transition-all duration-300 hover:text-cyan-300 hover:pl-2"
             onClick={() => setIsOpen(false)}
           >
             Home
@@ -258,7 +316,7 @@ function Navigation() {
           <div className="border-t border-slate-600/30 my-1"></div>
           <Link
             to="/the-commons"
-            className="block py-3 transition-all duration-300 hover:text-emerald-300 hover:pl-2"
+            className="block py-3 transition-all duration-300 hover:text-cyan-300 hover:pl-2"
             onClick={() => setIsOpen(false)}
           >
             The Commons
@@ -266,7 +324,7 @@ function Navigation() {
           <div className="border-t border-slate-600/30 my-1"></div>
           <Link
             to="/about-us"
-            className="block py-3 transition-all duration-300 hover:text-emerald-300 hover:pl-2"
+            className="block py-3 transition-all duration-300 hover:text-cyan-300 hover:pl-2"
             onClick={() => setIsOpen(false)}
           >
             About
