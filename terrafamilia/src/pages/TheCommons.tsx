@@ -306,6 +306,9 @@ function TheCommons() {
                         const authorAvatar = post.profiles?.avatar_url;
                         const isOwnPost = user && authorId === user.id;
 
+                        // Only show full name to the user themselves, otherwise show username
+                        const displayName = isOwnPost ? authorName : author;
+
                         return (
                           <div
                             key={post.id}
@@ -320,10 +323,10 @@ function TheCommons() {
                                 src={
                                   authorAvatar ||
                                   `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                    authorName
+                                    displayName
                                   )}&background=10b981&color=fff&bold=true&size=80`
                                 }
-                                alt={authorName}
+                                alt={displayName}
                                 className="w-12 h-12 rounded-full border-2 border-cyan-400 hover:border-cyan-500 transition-colors"
                               />
                             </Link>
@@ -351,7 +354,9 @@ function TheCommons() {
                                   {post.title}
                                 </h3>
                                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">
-                                  <span className="shrink-0">by {author}</span>
+                                  <span className="shrink-0">
+                                    by {displayName}
+                                  </span>
                                   <span className="shrink-0">•</span>
                                   <span className="shrink-0">
                                     {formatDate(post.created_at)}

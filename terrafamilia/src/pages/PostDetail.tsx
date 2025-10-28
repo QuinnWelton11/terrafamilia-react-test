@@ -147,6 +147,9 @@ function PostDetail() {
     const authorAvatar = (reply.profiles as any)?.avatar_url;
     const isOwnReply = user && authorId === user.id;
 
+    // Only show full name to the user themselves, otherwise show username
+    const displayName = isOwnReply ? authorName : author;
+
     return (
       <div
         key={reply.id}
@@ -165,10 +168,10 @@ function PostDetail() {
                 src={
                   authorAvatar ||
                   `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                    authorName
+                    displayName
                   )}&background=10b981&color=fff&bold=true&size=64`
                 }
-                alt={authorName}
+                alt={displayName}
                 className="w-10 h-10 rounded-full border-2 border-cyan-400 hover:border-cyan-500 transition-colors"
               />
             </Link>
@@ -177,8 +180,12 @@ function PostDetail() {
                 to={isOwnReply ? "/profile" : `/user/${authorId}`}
                 className="block hover:text-cyan-600 transition-colors"
               >
-                <span className="font-medium text-slate-800">{authorName}</span>
-                <span className="text-slate-500 text-sm"> (@{author})</span>
+                <span className="font-medium text-slate-800">
+                  {displayName}
+                </span>
+                {!isOwnReply && (
+                  <span className="text-slate-500 text-sm"> (@{author})</span>
+                )}
               </Link>
               <span className="text-xs sm:text-sm text-slate-500">
                 {formatDate(reply.created_at)}
@@ -282,6 +289,10 @@ function PostDetail() {
   const postAuthorId = (post.profiles as any)?.id;
   const postAuthorAvatar = (post.profiles as any)?.avatar_url;
   const isOwnPost = user && postAuthorId === user.id;
+
+  // Only show full name to the user themselves, otherwise show username
+  const postDisplayName = isOwnPost ? postAuthorName : postAuthor;
+
   const categoryName = categorySlug
     ? categoryMap[categorySlug] || categorySlug
     : "Forum";
@@ -386,10 +397,10 @@ function PostDetail() {
                     src={
                       postAuthorAvatar ||
                       `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        postAuthorName
+                        postDisplayName
                       )}&background=10b981&color=fff&bold=true&size=80`
                     }
-                    alt={postAuthorName}
+                    alt={postDisplayName}
                     className="w-12 h-12 rounded-full border-2 border-cyan-400 hover:border-cyan-500 transition-colors"
                   />
                 </Link>
@@ -401,9 +412,11 @@ function PostDetail() {
                     className="text-sm hover:text-cyan-600 transition-colors"
                   >
                     <span className="font-medium text-slate-700">
-                      {postAuthorName}
+                      {postDisplayName}
                     </span>
-                    <span className="text-slate-500"> (@{postAuthor})</span>
+                    {!isOwnPost && (
+                      <span className="text-slate-500"> (@{postAuthor})</span>
+                    )}
                   </Link>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs md:text-sm text-slate-500">
                     <span className="shrink-0">

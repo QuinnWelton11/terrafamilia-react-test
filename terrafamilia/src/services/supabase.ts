@@ -593,22 +593,7 @@ class SupabaseService {
 
     if (error) throw error;
 
-    // Update post reply count and last reply info
-    const { data: post } = await supabase
-      .from("posts")
-      .select("reply_count")
-      .eq("id", data.post_id)
-      .single();
-
-    await supabase
-      .from("posts")
-      .update({
-        reply_count: (post?.reply_count || 0) + 1,
-        last_reply_at: new Date().toISOString(),
-        last_reply_user_id: user.id,
-      })
-      .eq("id", data.post_id);
-
+    // Note: reply_count is automatically updated by database trigger
     return reply;
   }
 

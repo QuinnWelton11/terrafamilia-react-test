@@ -10,7 +10,7 @@ import PostDetail from "./pages/PostDetail";
 import CreatePost from "./pages/CreatePost";
 import UserProfile from "./pages/UserProfile";
 import PublicProfile from "./pages/PublicProfile";
-import AboutTest from "./pages/aboutvers2test";
+import CreditsPage from "./pages/Credits";
 import AdminDashboard from "./pages/AdminDashboard";
 import DashboardOverview from "./pages/admin/DashboardOverview";
 import UserManagement from "./pages/admin/UserManagement";
@@ -46,7 +46,7 @@ function App() {
                   <Route path="/eula" element={<EULA />} />
                   <Route path="/profile" element={<UserProfile />} />
                   <Route path="/user/:userId" element={<PublicProfile />} />
-                  <Route path="/about-test" element={<AboutTest />} />
+                  <Route path="/credits" element={<CreditsPage />} />
                   <Route
                     path="/forum/:categorySlug"
                     element={<ForumCategory />}

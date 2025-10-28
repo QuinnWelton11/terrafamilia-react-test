@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import supabaseService from "../services/supabase";
-import { Calendar, FileText, MapPin, Phone } from "lucide-react";
+import { Calendar, FileText } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -141,19 +141,18 @@ function PublicProfile() {
               src={
                 profile.avatar_url ||
                 `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  profile.full_name
+                  profile.username
                 )}&background=10b981&color=fff&bold=true&size=200`
               }
-              alt={profile.full_name}
+              alt={profile.username}
               className="w-32 h-32 rounded-full border-4 border-emerald-400"
             />
 
             {/* Profile Info */}
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-3xl font-bold text-slate-800 mb-2">
-                {profile.full_name}
+                @{profile.username}
               </h1>
-              <p className="text-xl text-slate-600 mb-4">@{profile.username}</p>
 
               {/* Stats */}
               <div className="flex flex-wrap gap-4 justify-center md:justify-start mb-4">
@@ -171,23 +170,7 @@ function PublicProfile() {
                 </div>
               </div>
 
-              {/* Additional Info */}
-              <div className="flex flex-col gap-2 text-slate-600">
-                {profile.country && profile.state_province && (
-                  <div className="flex items-center gap-2">
-                    <MapPin size={18} className="text-emerald-600" />
-                    <span>
-                      {profile.state_province}, {profile.country}
-                    </span>
-                  </div>
-                )}
-                {profile.phone_number && (
-                  <div className="flex items-center gap-2">
-                    <Phone size={18} className="text-emerald-600" />
-                    <span>{profile.phone_number}</span>
-                  </div>
-                )}
-              </div>
+              {/* Note: Location and phone number hidden for privacy */}
             </div>
           </div>
         </div>

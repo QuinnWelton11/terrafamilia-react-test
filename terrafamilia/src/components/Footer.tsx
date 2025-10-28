@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Logo from "../assets/Steward-fix-2.webp";
 
 function Footer() {
@@ -10,12 +11,12 @@ function Footer() {
             alt="Terrafamilia Logo"
             className="w-10 sm:w-12 md:w-[60px]"
           />
-          <p className="text-base sm:text-lg font-bold text-emerald-300">
-            Terrafamilia
-          </p>
         </div>
+        <Link to="/">Home</Link>
+        <Link to="/the-commons">The Commons</Link>
+        <Link to="/about">About</Link>
+        <Link to="/credits">Credits</Link>
         <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-center">
-          <p className="text-slate-300">Made with react!</p>
           <p className="text-slate-300">Copyright 2025</p>
         </div>
       </div>
