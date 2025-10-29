@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import LogoImg from "../assets/Steward-fix-2.webp";
+import LogoImg from "../assets/tf-logo-alt.png";
 import { useAuth } from "../contexts/AuthContext";
 import SupabaseService from "../services/supabase";
 
@@ -246,7 +246,7 @@ function Navigation() {
   };
 
   return (
-    <header className="bg-linear-to-r from-slate-500 via-slate-400 to-slate-500 text-slate-50 px-4 md:px-10 py-5 shadow-inner">
+    <header className="bg-linear-to-t from-slate-500 to-slate-400 text-slate-50 px-4 md:px-10 py-5 shadow-inner">
       <div className="flex justify-between items-center">
         <div className="flex flex-row items-center space-x-2 text-base md:text-xl">
           <img src={LogoImg} alt="" className="max-w-[3rem]" />

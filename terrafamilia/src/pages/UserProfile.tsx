@@ -227,7 +227,7 @@ function UserProfile() {
               <img
                 src={avatarPreview || avatarUrl}
                 alt={user.full_name}
-                className="w-32 h-32 rounded-full object-cover border-4 border-emerald-500"
+                className="w-32 h-32 rounded-full object-cover border-4 border-slate-500"
               />
               <input
                 type="file"
@@ -246,7 +246,7 @@ function UserProfile() {
               <div className="flex flex-wrap gap-2 mt-4 justify-center md:justify-start">
                 <label
                   htmlFor="avatar-upload"
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 cursor-pointer transition-colors"
+                  className="px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 cursor-pointer transition-colors"
                 >
                   Change Picture
                 </label>
@@ -292,7 +292,7 @@ function UserProfile() {
               onClick={() => setActiveTab("info")}
               className={`flex-1 px-6 py-3 font-medium transition-colors ${
                 activeTab === "info"
-                  ? "bg-emerald-600 text-white"
+                  ? "bg-slate-600 text-white"
                   : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
@@ -302,7 +302,7 @@ function UserProfile() {
               onClick={() => setActiveTab("posts")}
               className={`flex-1 px-6 py-3 font-medium transition-colors ${
                 activeTab === "posts"
-                  ? "bg-emerald-600 text-white"
+                  ? "bg-slate-600 text-white"
                   : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
@@ -312,7 +312,7 @@ function UserProfile() {
               onClick={() => setActiveTab("security")}
               className={`flex-1 px-6 py-3 font-medium transition-colors ${
                 activeTab === "security"
-                  ? "bg-emerald-600 text-white"
+                  ? "bg-slate-600 text-white"
                   : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
@@ -331,7 +331,7 @@ function UserProfile() {
                   {!editMode && (
                     <button
                       onClick={() => setEditMode(true)}
-                      className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                      className="px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 transition-colors"
                     >
                       Edit Profile
                     </button>
@@ -349,7 +349,7 @@ function UserProfile() {
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         required
-                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                       />
                     </div>
 
@@ -362,7 +362,7 @@ function UserProfile() {
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         required
-                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                       />
                     </div>
 
@@ -374,7 +374,7 @@ function UserProfile() {
                         type="text"
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
-                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                       />
                     </div>
 
@@ -386,7 +386,7 @@ function UserProfile() {
                         type="text"
                         value={stateProvince}
                         onChange={(e) => setStateProvince(e.target.value)}
-                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                       />
                     </div>
 
@@ -398,7 +398,7 @@ function UserProfile() {
                         type="tel"
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                       />
                     </div>
 
@@ -406,7 +406,7 @@ function UserProfile() {
                       <button
                         type="submit"
                         disabled={loading}
-                        className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                        className="px-6 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 disabled:opacity-50 transition-colors"
                       >
                         {loading ? "Saving..." : "Save Changes"}
                       </button>
@@ -485,7 +485,7 @@ function UserProfile() {
                     </p>
                     <Link
                       to="/create-post"
-                      className="inline-block px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                      className="inline-block px-6 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 transition-colors"
                     >
                       Create Your First Post
                     </Link>
@@ -496,13 +496,13 @@ function UserProfile() {
                       <Link
                         key={post.id}
                         to={`/forum/${post.categories?.slug}/${post.id}`}
-                        className="block p-4 border border-slate-200 rounded-lg hover:border-emerald-500 hover:shadow-md transition-all"
+                        className="block p-4 border border-slate-200 rounded-lg hover:border-slate-500 hover:shadow-md transition-all"
                       >
                         <h3 className="text-lg font-semibold text-slate-800 mb-2">
                           {post.title}
                         </h3>
                         <div className="flex items-center justify-between text-sm text-slate-600">
-                          <span className="bg-emerald-100 text-emerald-800 px-2 py-1 rounded">
+                          <span className="bg-slate-100 text-slate-800 px-2 py-1 rounded">
                             {post.categories?.name}
                           </span>
                           <div className="flex gap-4">
@@ -539,13 +539,13 @@ function UserProfile() {
                         type="email"
                         value={newEmail}
                         onChange={(e) => setNewEmail(e.target.value)}
-                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                      className="px-6 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 disabled:opacity-50 transition-colors"
                     >
                       {loading ? "Updating..." : "Update Email"}
                     </button>
@@ -570,7 +570,7 @@ function UserProfile() {
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                       />
                     </div>
                     <div>
@@ -581,13 +581,13 @@ function UserProfile() {
                         type="password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                      className="px-6 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 disabled:opacity-50 transition-colors"
                     >
                       {loading ? "Updating..." : "Update Password"}
                     </button>

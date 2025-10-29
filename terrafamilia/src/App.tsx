@@ -5,6 +5,7 @@ import TheCommons from "./pages/TheCommons";
 import AboutUs from "./pages/AboutUs";
 import SSO from "./pages/SSO";
 import EULA from "./pages/EULA";
+import TermsOfService from "./pages/TermsOfService";
 import ForumCategory from "./pages/ForumCategory";
 import PostDetail from "./pages/PostDetail";
 import CreatePost from "./pages/CreatePost";
@@ -44,6 +45,7 @@ function App() {
                   <Route path="/about-us" element={<AboutUs />} />
                   <Route path="/sso" element={<SSO />} />
                   <Route path="/eula" element={<EULA />} />
+                  <Route path="/terms" element={<TermsOfService />} />
                   <Route path="/profile" element={<UserProfile />} />
                   <Route path="/user/:userId" element={<PublicProfile />} />
                   <Route path="/credits" element={<CreditsPage />} />

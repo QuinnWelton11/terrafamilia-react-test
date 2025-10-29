@@ -145,7 +145,7 @@ function PublicProfile() {
                 )}&background=10b981&color=fff&bold=true&size=200`
               }
               alt={profile.username}
-              className="w-32 h-32 rounded-full border-4 border-emerald-400"
+              className="w-32 h-32 rounded-full border-4 border-cyan-100"
             />
 
             {/* Profile Info */}
@@ -155,16 +155,14 @@ function PublicProfile() {
               </h1>
 
               {/* Stats */}
-              <div className="flex flex-wrap gap-4 justify-center md:justify-start mb-4">
-                <div className="px-4 py-2 bg-emerald-50 rounded-lg">
-                  <p className="text-sm text-slate-600">Posts</p>
-                  <p className="text-2xl font-bold text-emerald-600">
-                    {postCount}
-                  </p>
+              <div className="flex flex-wrap gap-4 justify-center md:justify-start mb-4 text-shadow-md">
+                <div className="px-4 py-2 bg-slate-500 rounded-lg">
+                  <p className="text-sm text-slate-100">Posts</p>
+                  <p className="text-2xl font-bold text-cyan-50">{postCount}</p>
                 </div>
-                <div className="px-4 py-2 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-slate-600">Member Since</p>
-                  <p className="text-lg font-semibold text-blue-600">
+                <div className="px-4 py-2 bg-slate-500 rounded-lg">
+                  <p className="text-sm text-slate-100">Member Since</p>
+                  <p className="text-lg font-semibold text-slate-50">
                     {formatDate(profile.created_at)}
                   </p>
                 </div>
@@ -178,7 +176,7 @@ function PublicProfile() {
         {/* Recent Posts */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <FileText className="text-emerald-600" />
+            <FileText className="text-slate-600" />
             Recent Posts
           </h2>
 
@@ -194,13 +192,13 @@ function PublicProfile() {
                 <Link
                   key={post.id}
                   to={`/forum/${post.category.slug}/${post.id}`}
-                  className="block p-4 border border-slate-200 rounded-lg hover:border-emerald-400 hover:shadow-md transition-all"
+                  className="block p-4 border border-slate-200 rounded-lg hover:border-cyan-400 hover:shadow-md transition-all"
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-lg font-semibold text-slate-800 hover:text-emerald-600 transition-colors">
+                    <h3 className="text-lg font-semibold text-slate-800 hover:text-cyan-700 transition-colors">
                       {post.title}
                     </h3>
-                    <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-full">
+                    <span className="px-3 py-1 bg-cyan-200 text-slate-700 text-xs font-semibold rounded-full">
                       {post.category.name}
                     </span>
                   </div>
@@ -226,7 +224,7 @@ function PublicProfile() {
             <div className="mt-6 text-center">
               <Link
                 to="/the-commons"
-                className="inline-block px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors"
+                className="inline-block px-6 py-3 bg-slate-500 hover:bg-cyan-900 text-white text-shadow-md font-semibold rounded-lg transition-colors"
               >
                 View All Posts in The Commons
               </Link>
