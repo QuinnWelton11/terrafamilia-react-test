@@ -1,0 +1,16 @@
+# robots.txt for TerraFamilia
+
+User-agent: *
+Allow: /
+
+# Disallow admin and user profile pages from being indexed
+Disallow: /admin/
+Disallow: /profile
+Disallow: /user/
+
+# Allow forum categories and posts
+Allow: /forum/
+Allow: /the-commons
+
+# Sitemap location
+Sitemap: https://www.terrafamilia.net/sitemap.xml

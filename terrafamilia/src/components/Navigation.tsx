@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import LogoImg from "../assets/tf-logo-alt.png";
+import LogoImg from "../assets/Steward-fix-2.webp";
 import { useAuth } from "../contexts/AuthContext";
 import SupabaseService from "../services/supabase";
 
