@@ -3,6 +3,16 @@ import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import SupabaseService from "../services/supabase";
 import type { Post } from "../services/supabase";
+import {
+  Twitter,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Youtube,
+  Music,
+  Globe,
+  Mail,
+} from "lucide-react";
 
 function UserProfile() {
   const { user, isAuthenticated, refreshUser } = useAuth();
@@ -21,6 +31,14 @@ function UserProfile() {
   const [country, setCountry] = useState("");
   const [stateProvince, setStateProvince] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [twitterUrl, setTwitterUrl] = useState("");
+  const [facebookUrl, setFacebookUrl] = useState("");
+  const [instagramUrl, setInstagramUrl] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [tiktokUrl, setTiktokUrl] = useState("");
+  const [substackUrl, setSubstackUrl] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
 
   // Avatar state
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -47,6 +65,14 @@ function UserProfile() {
       setCountry(user.country || "");
       setStateProvince(user.state_province || "");
       setPhoneNumber(user.phone_number || "");
+      setTwitterUrl(user.twitter_url || "");
+      setFacebookUrl(user.facebook_url || "");
+      setInstagramUrl(user.instagram_url || "");
+      setLinkedinUrl(user.linkedin_url || "");
+      setYoutubeUrl(user.youtube_url || "");
+      setTiktokUrl(user.tiktok_url || "");
+      setSubstackUrl(user.substack_url || "");
+      setWebsiteUrl(user.website_url || "");
       setNewEmail(user.email || "");
     }
   }, [isAuthenticated, user, navigate]);
@@ -139,6 +165,14 @@ function UserProfile() {
         country: country || undefined,
         state_province: stateProvince || undefined,
         phone_number: phoneNumber || undefined,
+        twitter_url: twitterUrl || undefined,
+        facebook_url: facebookUrl || undefined,
+        instagram_url: instagramUrl || undefined,
+        linkedin_url: linkedinUrl || undefined,
+        youtube_url: youtubeUrl || undefined,
+        tiktok_url: tiktokUrl || undefined,
+        substack_url: substackUrl || undefined,
+        website_url: websiteUrl || undefined,
       });
       await refreshUser();
       setMessage("Profile updated successfully!");
@@ -402,6 +436,118 @@ function UserProfile() {
                       />
                     </div>
 
+                    {/* Social Media Section */}
+                    <div className="border-t border-slate-200 pt-4 mt-6">
+                      <h3 className="text-lg font-semibold text-slate-800 mb-4">
+                        Social Media Links (Optional)
+                      </h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                            Twitter/X URL
+                          </label>
+                          <input
+                            type="url"
+                            value={twitterUrl}
+                            onChange={(e) => setTwitterUrl(e.target.value)}
+                            placeholder="https://twitter.com/username"
+                            className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                            Facebook URL
+                          </label>
+                          <input
+                            type="url"
+                            value={facebookUrl}
+                            onChange={(e) => setFacebookUrl(e.target.value)}
+                            placeholder="https://facebook.com/username"
+                            className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                            Instagram URL
+                          </label>
+                          <input
+                            type="url"
+                            value={instagramUrl}
+                            onChange={(e) => setInstagramUrl(e.target.value)}
+                            placeholder="https://instagram.com/username"
+                            className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                            LinkedIn URL
+                          </label>
+                          <input
+                            type="url"
+                            value={linkedinUrl}
+                            onChange={(e) => setLinkedinUrl(e.target.value)}
+                            placeholder="https://linkedin.com/in/username"
+                            className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                            YouTube URL
+                          </label>
+                          <input
+                            type="url"
+                            value={youtubeUrl}
+                            onChange={(e) => setYoutubeUrl(e.target.value)}
+                            placeholder="https://youtube.com/@username"
+                            className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                            TikTok URL
+                          </label>
+                          <input
+                            type="url"
+                            value={tiktokUrl}
+                            onChange={(e) => setTiktokUrl(e.target.value)}
+                            placeholder="https://tiktok.com/@username"
+                            className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                            Substack URL
+                          </label>
+                          <input
+                            type="url"
+                            value={substackUrl}
+                            onChange={(e) => setSubstackUrl(e.target.value)}
+                            placeholder="https://yourname.substack.com"
+                            className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                            Personal Website
+                          </label>
+                          <input
+                            type="url"
+                            value={websiteUrl}
+                            onChange={(e) => setWebsiteUrl(e.target.value)}
+                            placeholder="https://yourwebsite.com"
+                            className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="flex gap-3">
                       <button
                         type="submit"
@@ -465,6 +611,112 @@ function UserProfile() {
                         {new Date(user.created_at).toLocaleDateString()}
                       </p>
                     </div>
+
+                    {/* Social Media Links */}
+                    {(user.twitter_url ||
+                      user.facebook_url ||
+                      user.instagram_url ||
+                      user.linkedin_url ||
+                      user.youtube_url ||
+                      user.tiktok_url ||
+                      user.substack_url ||
+                      user.website_url) && (
+                      <div className="border-t border-slate-200 pt-4 mt-4">
+                        <label className="block text-sm font-medium text-slate-500 mb-3">
+                          Social Media
+                        </label>
+                        <div className="flex flex-wrap gap-3">
+                          {user.twitter_url && (
+                            <a
+                              href={user.twitter_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700"
+                            >
+                              <Twitter size={18} />
+                              <span>Twitter</span>
+                            </a>
+                          )}
+                          {user.facebook_url && (
+                            <a
+                              href={user.facebook_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700"
+                            >
+                              <Facebook size={18} />
+                              <span>Facebook</span>
+                            </a>
+                          )}
+                          {user.instagram_url && (
+                            <a
+                              href={user.instagram_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700"
+                            >
+                              <Instagram size={18} />
+                              <span>Instagram</span>
+                            </a>
+                          )}
+                          {user.linkedin_url && (
+                            <a
+                              href={user.linkedin_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700"
+                            >
+                              <Linkedin size={18} />
+                              <span>LinkedIn</span>
+                            </a>
+                          )}
+                          {user.youtube_url && (
+                            <a
+                              href={user.youtube_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700"
+                            >
+                              <Youtube size={18} />
+                              <span>YouTube</span>
+                            </a>
+                          )}
+                          {user.tiktok_url && (
+                            <a
+                              href={user.tiktok_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700"
+                            >
+                              <Music size={18} />
+                              <span>TikTok</span>
+                            </a>
+                          )}
+                          {user.substack_url && (
+                            <a
+                              href={user.substack_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700"
+                            >
+                              <Mail size={18} />
+                              <span>Substack</span>
+                            </a>
+                          )}
+                          {user.website_url && (
+                            <a
+                              href={user.website_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700"
+                            >
+                              <Globe size={18} />
+                              <span>Website</span>
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

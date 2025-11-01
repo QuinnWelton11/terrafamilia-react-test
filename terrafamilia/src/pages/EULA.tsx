@@ -190,17 +190,6 @@ function EULA() {
                 operates, without regard to its conflict of law provisions.
               </p>
             </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold text-slate-800 mb-3">
-                13. Contact Information
-              </h2>
-              <p>
-                If you have any questions about this Agreement, please contact
-                us through the community forum or via the contact information
-                provided on our website.
-              </p>
-            </section>
           </div>
 
           {/* Back Button */}

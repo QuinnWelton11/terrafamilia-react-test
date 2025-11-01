@@ -18,7 +18,7 @@ function Hero() {
       <div className="absolute inset-0 bg-black/40"></div>
 
       <h2 className="text-white text-center absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xl md:text-2xl z-10">
-        Join the Family!
+        Join the Family.
       </h2>
     </div>
   );

@@ -22,7 +22,7 @@ function Footer() {
           >
             The Commons
           </Link>
-          <Link to="/about" className="hover:text-cyan-100 hover:underline">
+          <Link to="/about-us" className="hover:text-cyan-100 hover:underline">
             About
           </Link>
           <Link to="/credits" className="hover:text-cyan-100 hover:underline">

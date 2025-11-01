@@ -212,22 +212,6 @@ function TermsOfService() {
           </div>
         </div>
 
-        {/* Contact */}
-        <div className="bg-white rounded-lg shadow-md p-8 mb-6 border border-slate-200">
-          <div className="flex items-center gap-3 mb-4">
-            <FileText className="text-cyan-600" size={28} />
-            <h2 className="text-2xl font-bold text-slate-800">
-              10. Contact Information
-            </h2>
-          </div>
-          <div className="ml-10 space-y-3 text-slate-700">
-            <p>
-              If you have questions about these Terms of Service, please contact
-              us through the contact information provided on our platform.
-            </p>
-          </div>
-        </div>
-
         {/* Back Link */}
         <div className="text-center mt-8">
           <Link

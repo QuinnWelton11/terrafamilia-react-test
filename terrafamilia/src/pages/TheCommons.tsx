@@ -30,6 +30,9 @@ function TheCommons() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<RecentPost[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [categoriesWithNewPosts, setCategoriesWithNewPosts] = useState<
+    Set<string>
+  >(new Set());
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,6 +40,9 @@ function TheCommons() {
         // Fetch recent posts (latest 5 posts across all categories)
         const recentData = await SupabaseService.getRecentActivity(5);
         setRecentPosts(recentData as any); // Type assertion for Supabase joined data
+
+        // Check for new posts in each category
+        await checkForNewPosts();
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -46,6 +52,44 @@ function TheCommons() {
 
     fetchData();
   }, []);
+
+  // Check for new posts in categories
+  const checkForNewPosts = async () => {
+    const newPostsSet = new Set<string>();
+    const allCategorySlugs = forumCategories.flatMap((cat) => [
+      cat.slug,
+      ...cat.subcategories.map((sub) => sub.slug),
+    ]);
+
+    for (const slug of allCategorySlugs) {
+      const lastViewed = localStorage.getItem(`category_last_viewed_${slug}`);
+      if (lastViewed) {
+        const hasNew = await SupabaseService.hasNewPostsInCategory(
+          slug,
+          lastViewed
+        );
+        if (hasNew) {
+          newPostsSet.add(slug);
+        }
+      }
+    }
+
+    setCategoriesWithNewPosts(newPostsSet);
+  };
+
+  // Mark category as viewed when user navigates to it
+  const handleCategoryClick = (slug: string) => {
+    localStorage.setItem(
+      `category_last_viewed_${slug}`,
+      new Date().toISOString()
+    );
+    setCategoriesWithNewPosts((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(slug);
+      return newSet;
+    });
+    navigate(`/forum/${slug}`);
+  };
 
   // Search posts when query changes (debounced)
   useEffect(() => {
@@ -190,9 +234,17 @@ function TheCommons() {
                   key={category.slug}
                   className="bg-white/95 rounded-lg shadow-md border border-slate-200 p-6 hover:shadow-lg transition-shadow duration-300"
                 >
-                  <h2 className="text-lg md:text-2xl font-semibold text-slate-800 mb-2">
-                    {category.name}
-                  </h2>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h2 className="text-lg md:text-2xl font-semibold text-slate-800">
+                      {category.name}
+                    </h2>
+                    {categoriesWithNewPosts.has(category.slug) && (
+                      <span className="relative flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm md:text-base text-slate-600 mb-4">
                     {category.description}
                   </p>
@@ -202,22 +254,30 @@ function TheCommons() {
                     {category.subcategories.map((sub) => (
                       <div
                         key={sub.slug}
-                        className="block p-3 bg-slate-50 hover:bg-slate-100 rounded-md transition-colors duration-200 cursor-pointer"
-                        onClick={() => navigate(`/forum/${sub.slug}`)}
+                        className="flex items-center gap-2 p-3 bg-slate-50 hover:bg-slate-100 rounded-md transition-colors duration-200 cursor-pointer"
+                        onClick={() => handleCategoryClick(sub.slug)}
                       >
-                        <span className="text-cyan-600 hover:text-cyan-700 font-medium">
-                          {sub.name}
-                        </span>
-                        <span className="text-xs text-slate-500 ml-2">
-                          (Click to view posts)
-                        </span>
+                        <div className="flex-1">
+                          <span className="text-cyan-600 hover:text-cyan-700 font-medium">
+                            {sub.name}
+                          </span>
+                          <span className="text-xs text-slate-500 ml-2">
+                            (Click to view posts)
+                          </span>
+                        </div>
+                        {categoriesWithNewPosts.has(sub.slug) && (
+                          <span className="relative flex h-2.5 w-2.5 shrink-0">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                          </span>
+                        )}
                       </div>
                     ))}
                   </div>
 
                   {/* View All Link */}
                   <button
-                    onClick={() => navigate(`/forum/${category.slug}`)}
+                    onClick={() => handleCategoryClick(category.slug)}
                     className="inline-block mt-4 text-cyan-600 hover:text-cyan-700 font-medium cursor-pointer"
                   >
                     View all in {category.name} →

@@ -1,7 +1,18 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import supabaseService from "../services/supabase";
-import { Calendar, FileText } from "lucide-react";
+import {
+  Calendar,
+  FileText,
+  Twitter,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Youtube,
+  Music,
+  Globe,
+  Mail,
+} from "lucide-react";
 
 interface Profile {
   id: string;
@@ -11,6 +22,14 @@ interface Profile {
   country?: string;
   state_province?: string;
   phone_number?: string;
+  twitter_url?: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  linkedin_url?: string;
+  youtube_url?: string;
+  tiktok_url?: string;
+  substack_url?: string;
+  website_url?: string;
   created_at: string;
 }
 
@@ -167,6 +186,120 @@ function PublicProfile() {
                   </p>
                 </div>
               </div>
+
+              {/* Social Media Links */}
+              {(profile.twitter_url ||
+                profile.facebook_url ||
+                profile.instagram_url ||
+                profile.linkedin_url ||
+                profile.youtube_url ||
+                profile.tiktok_url ||
+                profile.substack_url ||
+                profile.website_url) && (
+                <div className="mt-4">
+                  <p className="text-sm font-medium text-slate-600 mb-2">
+                    Connect with me:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.twitter_url && (
+                      <a
+                        href={profile.twitter_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-100 hover:bg-cyan-200 rounded-lg transition-colors text-cyan-800 text-sm"
+                        title="Twitter/X"
+                      >
+                        <Twitter size={16} />
+                        <span>Twitter</span>
+                      </a>
+                    )}
+                    {profile.facebook_url && (
+                      <a
+                        href={profile.facebook_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-100 hover:bg-cyan-200 rounded-lg transition-colors text-cyan-800 text-sm"
+                        title="Facebook"
+                      >
+                        <Facebook size={16} />
+                        <span>Facebook</span>
+                      </a>
+                    )}
+                    {profile.instagram_url && (
+                      <a
+                        href={profile.instagram_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-100 hover:bg-cyan-200 rounded-lg transition-colors text-cyan-800 text-sm"
+                        title="Instagram"
+                      >
+                        <Instagram size={16} />
+                        <span>Instagram</span>
+                      </a>
+                    )}
+                    {profile.linkedin_url && (
+                      <a
+                        href={profile.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-100 hover:bg-cyan-200 rounded-lg transition-colors text-cyan-800 text-sm"
+                        title="LinkedIn"
+                      >
+                        <Linkedin size={16} />
+                        <span>LinkedIn</span>
+                      </a>
+                    )}
+                    {profile.youtube_url && (
+                      <a
+                        href={profile.youtube_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-100 hover:bg-cyan-200 rounded-lg transition-colors text-cyan-800 text-sm"
+                        title="YouTube"
+                      >
+                        <Youtube size={16} />
+                        <span>YouTube</span>
+                      </a>
+                    )}
+                    {profile.tiktok_url && (
+                      <a
+                        href={profile.tiktok_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-100 hover:bg-cyan-200 rounded-lg transition-colors text-cyan-800 text-sm"
+                        title="TikTok"
+                      >
+                        <Music size={16} />
+                        <span>TikTok</span>
+                      </a>
+                    )}
+                    {profile.substack_url && (
+                      <a
+                        href={profile.substack_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-100 hover:bg-cyan-200 rounded-lg transition-colors text-cyan-800 text-sm"
+                        title="Substack"
+                      >
+                        <Mail size={16} />
+                        <span>Substack</span>
+                      </a>
+                    )}
+                    {profile.website_url && (
+                      <a
+                        href={profile.website_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-100 hover:bg-cyan-200 rounded-lg transition-colors text-cyan-800 text-sm"
+                        title="Website"
+                      >
+                        <Globe size={16} />
+                        <span>Website</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Note: Location and phone number hidden for privacy */}
             </div>

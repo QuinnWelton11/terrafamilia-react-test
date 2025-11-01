@@ -18,6 +18,14 @@ export interface Profile {
   country?: string;
   state_province?: string;
   phone_number?: string;
+  twitter_url?: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  linkedin_url?: string;
+  youtube_url?: string;
+  tiktok_url?: string;
+  substack_url?: string;
+  website_url?: string;
   is_admin: boolean;
   is_moderator: boolean;
   is_banned: boolean;
@@ -188,6 +196,14 @@ class SupabaseService {
       state_province?: string;
       phone_number?: string;
       avatar_url?: string;
+      twitter_url?: string;
+      facebook_url?: string;
+      instagram_url?: string;
+      linkedin_url?: string;
+      youtube_url?: string;
+      tiktok_url?: string;
+      substack_url?: string;
+      website_url?: string;
     }
   ) {
     const { data, error } = await supabase
@@ -639,6 +655,37 @@ class SupabaseService {
 
     if (error) throw error;
     return data;
+  }
+
+  async hasNewPostsInCategory(categorySlug: string, lastViewedAt?: string) {
+    if (!lastViewedAt) return false;
+
+    try {
+      // Get the category and its children
+      const category = await this.getCategoryWithChildren(categorySlug);
+      const subcategories = (category as any).subcategories || [];
+
+      // Build array of category IDs to check
+      const categoryIds = [category.id];
+      if (subcategories.length > 0) {
+        categoryIds.push(...subcategories.map((sub: any) => sub.id));
+      }
+
+      // Check for new posts in these categories
+      const { data, error } = await supabase
+        .from("posts")
+        .select("id")
+        .in("category_id", categoryIds)
+        .gt("created_at", lastViewedAt)
+        .limit(1);
+
+      if (error) throw error;
+
+      return (data?.length || 0) > 0;
+    } catch (error) {
+      console.error("Error checking for new posts:", error);
+      return false;
+    }
   }
 
   // ============================================================================

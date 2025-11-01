@@ -39,6 +39,12 @@ function ForumCategory() {
 
       setCategoryName(categoryDisplayNames[categorySlug] || categorySlug);
 
+      // Mark category as viewed
+      localStorage.setItem(
+        `category_last_viewed_${categorySlug}`,
+        new Date().toISOString()
+      );
+
       try {
         // First get the category with its children
         const category = await SupabaseService.getCategoryWithChildren(
