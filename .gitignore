@@ -1,0 +1,6 @@
+# Documentation files (kept locally, not tracked)
+*.md
+!README.md
+
+# Backup directories
+*-backup/

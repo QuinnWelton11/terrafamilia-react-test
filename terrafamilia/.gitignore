@@ -27,3 +27,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Documentation files (kept locally, not tracked)
+*.md
+!README.md
+
